@@ -178,7 +178,7 @@
                     <dependency>
                         <groupId>com.puppycrawl.tools</groupId>
                         <artifactId>checkstyle</artifactId>
-                        <version>8.16</version><!-- use a current version of Checkstyle -->
+                        <version>8.18</version><!-- use a current version of Checkstyle -->
                     </dependency>
                 </dependencies>
                 <executions>
