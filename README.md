@@ -1,5 +1,8 @@
 # structured-logging
 
+[<img src="https://opensourcelogos.aws.dmtech.cloud/dmTECH_opensource_logo.svg" height="20" width="130">](https://dmtech.de/)
+[![Build Status](https://travis-ci.org/dm-drogeriemarkt/structured-logging.svg?branch=master)](https://travis-ci.org/dm-drogeriemarkt/structured-logging) 
+
 Structured logging utility. Designed to work with logback and logstash. Works well (but not only) with Spring and ELK Stack.
 
 ## Why use this?
