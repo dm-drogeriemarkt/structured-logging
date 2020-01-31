@@ -49,7 +49,7 @@
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
         <nexus-staging-maven-plugin.version>${maven-gpg-plugin.version}.8</nexus-staging-maven-plugin.version>
-        <checkstyle.version>8.22</checkstyle.version>
+        <checkstyle.version>8.29</checkstyle.version>
     </properties>
 
     <dependencies>
