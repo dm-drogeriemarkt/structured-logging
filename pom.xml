@@ -44,12 +44,12 @@
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
-        <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
+        <maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
         <maven-surefire-plugin.version>2.22.1</maven-surefire-plugin.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
         <nexus-staging-maven-plugin.version>${maven-gpg-plugin.version}.8</nexus-staging-maven-plugin.version>
-        <checkstyle.version>8.22</checkstyle.version>
+        <checkstyle.version>8.29</checkstyle.version>
     </properties>
 
     <dependencies>
