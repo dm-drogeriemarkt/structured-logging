@@ -23,7 +23,24 @@ import java.io.IOException;
 
 @Slf4j
 public class StructuredMdcJsonProviderUnitTest {
-    private static String SAMPLE_LOGSTASH_JSON_LOG = "{\"@version\":\"1\",\"message\":\"something in which the ExampleBean context is relevant\",\"logger_name\":\"de.dm.prom.structuredlogging.StructuredMdcJsonProviderUnitTest\",\"thread_name\":\"main\",\"level\":\"INFO\",\"level_value\":20000,\"an_unmanaged_mdc_field\":\"some value\",\"example_bean\":{\"name\":\"John Doe\",\"age\":35,\"importantTime\":\"2019-01-01T13:37\",\"importantOffsetTime\":\"2019-01-01T13:37+01:00\"}}";
+    private static String SAMPLE_LOGSTASH_JSON_LOG = "{\"@version\":\"1\"," +
+            "\"message\":\"something in which the ExampleBean context is relevant\"," +
+            "\"logger_name\":\"de.dm.prom.structuredlogging.StructuredMdcJsonProviderUnitTest\"," +
+            "\"thread_name\":\"main\"," +
+            "\"level\":\"INFO\"," +
+            "\"level_value\":20000," +
+            "\"an_unmanaged_mdc_field\":\"some value\"," +
+            "\"example_bean\":" +
+            "{\"name\":\"John Doe\"," +
+            "\"age\":35," +
+            "\"importantTime\":\"2019-01-01T13:37\"," +
+            "\"importantOffsetTime\":\"2019-01-01T13:37+01:00\"," +
+            "\"instant\":\"1970-01-01T00:00:01Z\"," +
+            "\"localDate\":\"2020-01-01\"," +
+            "\"offsetTime\":\"13:37+01:00\"," +
+            "\"period\":\"P42D\"," +
+            "\"zonedDateTime\":\"2019-01-01T13:37Z[UTC]\"}}";
+    
     private Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 
     @Rule

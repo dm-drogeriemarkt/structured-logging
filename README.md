@@ -9,6 +9,21 @@ Structured logging utility.
 * Works with log consumers that can digest JSON logs, like the **ELK Stack** or **Datadog**.
 * Framework agnostic (works well with **Spring**, because Spring Boot uses logback out of the box) 
 
+**Table of Contents**
+
+* [Why use this?](#why-use-this)
+* [Example](#example)
+* [Changes](#changes)
+  * [1.0.3](#103)
+* [Usage](#usage)
+  * [Add structured-logging as a dependency](#add-structured-logging-as-a-dependency)
+  * [Define how Objects should be named in MDC](#define-how-objects-should-be-named-in-mdc)
+  * [Put Objects into MDC](#put-objects-into-mdc)
+    * [Excluding properties from serialization](#excluding-properties-from-serialization)
+  * [Configure Logback for Logstash](#configure-logback-for-logstash)
+  * [Configure a Task Decorator in Spring](#configure-a-task-decorator-in-spring)
+  * [Test your logging](#test-your-logging)
+
 ## Why use this?
 
 If you use your logs for monitoring, alerting or visualization, you want them to have structured information so you can properly build your monitoring/alerting/visualizations on that.
@@ -42,6 +57,19 @@ If there are log messages that happen in the context of an order, you may want t
     }
 ```
 
+## Changes
+
+### 1.0.3
+
+* Added proper serialization for further JSR310 types. Now properly serializes
+  * Instant (new)
+  * LocalDate (new)
+  * LocalDateTime
+  * OffsetDateTime
+  * OffsetTime (new)
+  * Period (new)
+  * ZonedDateTime (new)
+
 ## Usage
 
 To use this, you need to:
@@ -62,7 +90,7 @@ If you use maven, add this to your pom.xml:
 <dependency>
     <groupId>de.dm.infrastructure</groupId>
     <artifactId>structured-logging</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <scope>test</scope>
 </dependency>
 ```

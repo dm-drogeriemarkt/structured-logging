@@ -16,7 +16,15 @@ import static de.dm.prom.structuredlogging.StructuredMdcJsonProvider.JSON_PREFIX
 
 @Slf4j
 public class MdcContextUnitTest {
-    private static final String SAMPLE_BEAN_JSON = "{\"name\":\"John Doe\",\"age\":35,\"importantTime\":\"2019-01-01T13:37\",\"importantOffsetTime\":\"2019-01-01T13:37+01:00\"}";
+    private static final String SAMPLE_BEAN_JSON = "{\"name\":\"John Doe\"," +
+            "\"age\":35," +
+            "\"importantTime\":\"2019-01-01T13:37\"," +
+            "\"importantOffsetTime\":\"2019-01-01T13:37+01:00\"," +
+            "\"instant\":\"1970-01-01T00:00:01Z\"," +
+            "\"localDate\":\"2020-01-01\"," +
+            "\"offsetTime\":\"13:37+01:00\"," +
+            "\"period\":\"P42D\"," +
+            "\"zonedDateTime\":\"2019-01-01T13:37Z[UTC]\"}";
 
     @Rule
     public LogCapture logCapture = LogCapture.forUnitTest();

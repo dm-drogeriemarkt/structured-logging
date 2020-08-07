@@ -5,7 +5,7 @@
 
     <groupId>de.dm.infrastructure</groupId>
     <artifactId>structured-logging</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.4-SNAPSHOT</version>
 
     <name>structured-logging</name>
     <description>Structured logging and log testing</description>

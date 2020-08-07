@@ -7,8 +7,14 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 
+import java.lang.reflect.InvocationTargetException;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.Period;
+import java.time.ZonedDateTime;
 
 /**
  * a context that can be used to wrap MDC information in a try-with-resources block.
@@ -56,14 +62,15 @@ public final class MdcContext<SerializedType, MdcIdType extends MdcContextId<Ser
     public void close() {
         if (oldValue == null) {
             MDC.remove(key);
-        }
-        else {
+        } else {
             MDC.put(key, oldValue);
         }
     }
 
     private static String toJson(Object object) {
-        String objectToJson = "{\"json_error\":\"Unserializable Object.\"}"; //needs to be an object, not a string, for Kibana. Otherwise, Kibana will throw away the log entry because the field has the wrong type.
+        String objectToJson = "{\"json_error\":\"Unserializable Object.\"}";
+        //needs to be an object, not a string, for Kibana. Otherwise, Kibana will throw away the log entry because the field has the wrong type.
+
         try {
             objectToJson = getObjectMapper().writeValueAsString(object);
         } catch (JsonProcessingException e) {
@@ -73,10 +80,16 @@ public final class MdcContext<SerializedType, MdcIdType extends MdcContextId<Ser
     }
 
     private static ObjectMapper getObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
-        module.addSerializer(OffsetDateTime.class, new ToStringSerializer());
+        module.addSerializer(Instant.class, new ToStringSerializer());
+        module.addSerializer(LocalDate.class, new ToStringSerializer());
         module.addSerializer(LocalDateTime.class, new ToStringSerializer());
+        module.addSerializer(OffsetDateTime.class, new ToStringSerializer());
+        module.addSerializer(OffsetTime.class, new ToStringSerializer());
+        module.addSerializer(Period.class, new ToStringSerializer());
+        module.addSerializer(ZonedDateTime.class, new ToStringSerializer());
+        
+        ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(module);
         return objectMapper;
     }
@@ -98,8 +111,7 @@ public final class MdcContext<SerializedType, MdcIdType extends MdcContextId<Ser
         if (!oldValue.equals(value)) {
             log.error("{} The old value differs from new value. This should never happen, because it messes up the MDC context. Old value: {} - new value: {}",
                     message, oldValue, value);
-        }
-        else {
+        } else {
             log.warn("{} The value is overwritten with the same value. This is superfluous and should be removed.", message);
         }
     }
