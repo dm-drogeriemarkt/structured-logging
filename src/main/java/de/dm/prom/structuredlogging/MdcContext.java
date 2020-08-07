@@ -38,9 +38,9 @@ public final class MdcContext<SerializedType, MdcIdType extends MdcContextId<Ser
      */
     public static <SerializedType, MdcIdType extends MdcContextId<SerializedType>> MdcContext<SerializedType, MdcIdType> of(Class<MdcIdType> type, SerializedType mdcValue) {
         try {
-            MdcContextId<SerializedType> id = type.newInstance();
+            MdcContextId<SerializedType> id = type.getDeclaredConstructor().newInstance();
             return new MdcContext<>(id.getMdcKey(), toJson(mdcValue));
-        } catch (IllegalAccessException | InstantiationException e) {
+        } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
             log.error("Cannot put key of type {} to MDC because no new instance of {} can be created: {}",
                     mdcValue.getClass().getSimpleName(), type.getSimpleName(), e.getMessage());
         }
