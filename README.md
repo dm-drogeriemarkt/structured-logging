@@ -97,10 +97,10 @@ If you use maven, add this to your pom.xml:
 
 ### Define how Objects should be named in MDC
 
-Define what the MDC key of a certain object type should be by implementing `MdcContextKey<T>`:
+Define what the MDC key of a certain object type should be by implementing `MdcContextId<T>`:
 
 ```java
-public final class MyBeanKey implements MdcContextKey<MyBean> 
+public final class MyBeanKey implements MdcContextId<MyBean>
     @Override
     public String getMdcKey() {
         return "my_bean";
