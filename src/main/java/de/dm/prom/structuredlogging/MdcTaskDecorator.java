@@ -17,15 +17,28 @@ public class MdcTaskDecorator {
     public Runnable decorate(Runnable runnable) {
         Map<String, String> contextMap = MDC.getCopyOfContextMap();
         return () -> {
+            boolean contextWasSet = false;
             try {
-                if (contextMap != null && !contextMap.isEmpty()) {
-                    MDC.setContextMap(contextMap);
-                    log.debug("MDC context set for @Async method."); //hopefully this helps when reading logs in the future
+                if (hasContent(contextMap)) {
+                    Map<String, String> threadsContextMap = MDC.getCopyOfContextMap();
+                    if (!hasContent(threadsContextMap)) {
+                        MDC.setContextMap(contextMap);
+                        contextWasSet = true;
+                        log.debug("MDC context set for runnable."); //hopefully this helps when reading logs in the future
+                    } else {
+                        log.warn("MDC context was not set for runnable because it was run in a thread that already had a context.");
+                    }
                 }
                 runnable.run();
             } finally {
-                MDC.clear();
+                if (contextWasSet) {
+                    MDC.clear();
+                }
             }
         };
+    }
+
+    private boolean hasContent(Map<String, String> contextMap) {
+        return contextMap != null && !contextMap.isEmpty();
     }
 }
