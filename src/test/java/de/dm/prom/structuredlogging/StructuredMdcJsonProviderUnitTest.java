@@ -15,7 +15,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.boot.test.rule.OutputCapture;
+import org.springframework.boot.test.system.OutputCaptureRule;
 import org.springframework.util.ResourceUtils;
 
 import java.io.FileNotFoundException;
@@ -40,11 +40,11 @@ public class StructuredMdcJsonProviderUnitTest {
             "\"offsetTime\":\"13:37+01:00\"," +
             "\"period\":\"P42D\"," +
             "\"zonedDateTime\":\"2019-01-01T13:37Z[UTC]\"}}";
-    
+
     private Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 
     @Rule
-    public final OutputCapture outputCapture = new OutputCapture();
+    public OutputCaptureRule output = new OutputCaptureRule();
     // LogCapture is not applicable here because the actual output format of the log is relevant
 
     @Before
@@ -65,7 +65,8 @@ public class StructuredMdcJsonProviderUnitTest {
         try (MdcContext c = MdcContext.of(ExampleBeanId.class, ExampleBean.getExample())) {
             MDC.put("an_unmanaged_mdc_field", "some value");
             log.info("something in which the ExampleBean context is relevant");
-            String consoleOutput = outputCapture.toString();  //works right now because the output contains exactly one log message
+
+            String consoleOutput = output.toString();  //works right now because the output contains exactly one log message
 
             ObjectMapper mapper = new ObjectMapper();
 
