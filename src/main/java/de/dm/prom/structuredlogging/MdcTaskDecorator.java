@@ -14,6 +14,18 @@ import java.util.Map;
  */
 @Slf4j
 public class MdcTaskDecorator {
+    /**
+     * use this do decorate a runnable intended to run in a separate thread - it will be decorated so that the main
+     * thread's MDC Context will be copied to the other thread - and removed when runnable is done
+     * <p>
+     * analogous in usage to Spring's TaskDecorator
+     * <p>
+     * will log a WARNing and not copy the MDC context if the other thread already has content in its MDC context.
+     *
+     * @param runnable runnable to run
+     *
+     * @return the decorated runnable
+     */
     public Runnable decorate(Runnable runnable) {
         Map<String, String> contextMap = MDC.getCopyOfContextMap();
         return () -> {
