@@ -33,29 +33,66 @@ public final class MdcContext<SerializedType, MdcIdType extends MdcContextId<Ser
     /**
      * create an MDC context
      * <p>
-     * this is a static constructor to enforce generic type safety
+     * use this to construct an MDC context ensuring that the same key is always used for a certain type
      *
-     * @param type {@link MdcContextId} implementation to describe to which field to serialize the value
+     * @param type {@link MdcContextId} implementation to describe which MDC key to use
      * @param mdcValue the object to write to MDC
-     * @param <SerializedType> an implementation of MdcContextId that defines the field into which the serialized object is written
-     * @param <MdcIdType> the type of the object to serialize
+     * @param <SerializedType> the type of the object to serialize
+     * @param <MdcIdType> an implementation of MdcContextId that defines the MDC key for a certain type
      *
      * @return an MDC context to use in a try-with-resources block
      */
     public static <SerializedType, MdcIdType extends MdcContextId<SerializedType>> MdcContext<SerializedType, MdcIdType> of(Class<MdcIdType> type, SerializedType mdcValue) {
         try {
             MdcContextId<SerializedType> id = type.getDeclaredConstructor().newInstance();
-            return new MdcContext<>(id.getMdcKey(), toJson(mdcValue));
+            return new MdcContext<>(id.getMdcKey(), mdcValue);
         } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
             log.error("Cannot put key of type {} to MDC because no new instance of {} can be created: {}",
                     mdcValue.getClass().getSimpleName(), type.getSimpleName(), e.getMessage());
         }
-        return new MdcContext<>(mdcValue.getClass().getSimpleName(), mdcValue.toString());
+        return new MdcContext<>(mdcValue.getClass().getSimpleName(), mdcValue);
     }
 
-    private MdcContext(String key, String value) {
+    /**
+     * create an MDC context
+     * <p>
+     * use this to construct an MDC context with a manually defined key
+     * <p>
+     * See {@link MdcContext#of(Class, Object)} if you want to ensure that the same key is always used for a certain type
+     *
+     * @param mdcKey MDC key to use
+     * @param mdcValue the object to write to MDC
+     * @param <SerializedType> the type of the object to serialize
+     * @param <MdcIdType> an implementation of MdcContextId that defines the MDC key for a certain type
+     *
+     * @return an MDC context to use in a try-with-resources block
+     */
+    public static <SerializedType, MdcIdType extends MdcContextId<SerializedType>> MdcContext<SerializedType, MdcIdType> of(String mdcKey, SerializedType mdcValue) {
+        return new MdcContext<>(mdcKey, mdcValue);
+    }
+
+    /**
+     * create an MDC context
+     * <p>
+     * use this to construct an MDC context that uses the serialized object's simpleName as the MDC key
+     * <p>
+     * See {@link MdcContext#of(Class, Object)} if you want to ensure that the same MDC key is always used for a certain type
+     * <p>
+     * See {@link MdcContext#of(String, Object)} if you want to manually define the MDC key
+     *
+     * @param mdcValue the object to write to MDC
+     * @param <SerializedType> the type of the object to serialize
+     * @param <T> not relevant for this static constructor
+     *
+     * @return an MDC context to use in a try-with-resources block
+     */
+    public static <SerializedType, T extends MdcContextId<SerializedType>> MdcContext<SerializedType, T> of(SerializedType mdcValue) {
+        return new MdcContext<>(mdcValue.getClass().getSimpleName(), mdcValue);
+    }
+
+    private MdcContext(String key, SerializedType value) {
         this.key = key;
-        oldValue = putToMDCwithOverwriteWarning(key, value);
+        oldValue = putToMDCwithOverwriteWarning(key, toJson(value));
     }
 
     @Override
@@ -88,7 +125,7 @@ public final class MdcContext<SerializedType, MdcIdType extends MdcContextId<Ser
         module.addSerializer(OffsetTime.class, new ToStringSerializer());
         module.addSerializer(Period.class, new ToStringSerializer());
         module.addSerializer(ZonedDateTime.class, new ToStringSerializer());
-        
+
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(module);
         return objectMapper;
