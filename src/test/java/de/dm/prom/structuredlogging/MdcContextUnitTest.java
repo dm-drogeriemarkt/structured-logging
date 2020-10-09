@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.dm.infrastructure.logcapture.LogCapture;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.MDC;
 
 import java.io.IOException;
@@ -15,7 +15,7 @@ import java.io.IOException;
 import static de.dm.prom.structuredlogging.StructuredMdcJsonProvider.JSON_PREFIX;
 
 @Slf4j
-public class MdcContextUnitTest {
+class MdcContextUnitTest {
     private static final String SAMPLE_BEAN_JSON = "{\"name\":\"John Doe\"," +
             "\"age\":35," +
             "\"importantTime\":\"2019-01-01T13:37\"," +
@@ -26,11 +26,11 @@ public class MdcContextUnitTest {
             "\"period\":\"P42D\"," +
             "\"zonedDateTime\":\"2019-01-01T13:37Z[UTC]\"}";
 
-    @Rule
-    public LogCapture logCapture = LogCapture.forUnitTest();
+    @RegisterExtension
+    public LogCapture logCapture = LogCapture.forCurrentPackage();
 
     @Test
-    public void createTrnContext() throws IOException {
+    void createTrnContext() throws IOException {
         try (MdcContext c = MdcContext.of(ExampleBeanId.class, ExampleBean.getExample())) {
             String jsonStringFromMdc = MDC.get(new ExampleBeanId().getMdcKey());
 
@@ -45,7 +45,7 @@ public class MdcContextUnitTest {
     }
 
     @Test
-    public void putSomethingToMDCAndRemoveWhenDone() {
+    void putSomethingToMDCAndRemoveWhenDone() {
         String mdcKey = new StringId().getMdcKey();
         String mdcValue = "test value"; //JSON strings are expected at this point
         try (MdcContext c = MdcContext.of(StringId.class, mdcValue)) {
@@ -55,7 +55,7 @@ public class MdcContextUnitTest {
     }
 
     @Test
-    public void overwriteMDCValue() {
+    void overwriteMDCValue() {
         String someValue = "some value";
         String someValueJson = JSON_PREFIX + "\"" + someValue + "\"";
         String otherValue = "other value";

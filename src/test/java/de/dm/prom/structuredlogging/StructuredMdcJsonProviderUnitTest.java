@@ -9,20 +9,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.boot.test.system.OutputCaptureRule;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.util.ResourceUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+@ExtendWith(OutputCaptureExtension.class)
+// LogCapture is not applicable here because the actual output format of the log is relevant
 @Slf4j
-public class StructuredMdcJsonProviderUnitTest {
+class StructuredMdcJsonProviderUnitTest {
     private static String SAMPLE_LOGSTASH_JSON_LOG = "{\"@version\":\"1\"," +
             "\"message\":\"something in which the ExampleBean context is relevant\"," +
             "\"logger_name\":\"de.dm.prom.structuredlogging.StructuredMdcJsonProviderUnitTest\"," +
@@ -43,25 +46,22 @@ public class StructuredMdcJsonProviderUnitTest {
 
     private Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 
-    @Rule
-    public OutputCaptureRule output = new OutputCaptureRule();
-    // LogCapture is not applicable here because the actual output format of the log is relevant
 
-    @Before
-    public void setupLogback() throws FileNotFoundException, JoranException {
+    @BeforeEach
+    void setupLogback() throws FileNotFoundException, JoranException {
         rootLogger.iteratorForAppenders().forEachRemaining(Appender::stop);
         new ContextInitializer(rootLogger.getLoggerContext())
                 .configureByResource(ResourceUtils.getURL("src/test/resources/logback-stdout-json.xml"));
     }
 
-    @After
-    public void resetLogback() {
+    @AfterEach
+    void resetLogback() {
         rootLogger.iteratorForAppenders().forEachRemaining(Appender::start);
         rootLogger.getAppender("JSON-CONSOLE").stop();
     }
 
     @Test
-    public void logTest() throws IOException {
+    void logTest(CapturedOutput output) throws IOException {
         try (MdcContext c = MdcContext.of(ExampleBeanId.class, ExampleBean.getExample())) {
             MDC.put("an_unmanaged_mdc_field", "some value");
             log.info("something in which the ExampleBean context is relevant");

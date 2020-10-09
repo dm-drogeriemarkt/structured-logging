@@ -1,10 +1,10 @@
 package de.dm.prom.structuredlogging;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.MDC;
 
 import java.util.concurrent.Executors;
@@ -14,13 +14,13 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@RunWith(MockitoJUnitRunner.class)
-public class MdcTaskDecoratorUnitTest {
+@ExtendWith(MockitoExtension.class)
+class MdcTaskDecoratorUnitTest {
 
     private MdcTaskDecorator mdcTaskDecorator = new MdcTaskDecorator();
 
     @Test
-    public void decorateCallsRunnable() throws InterruptedException {
+    void decorateCallsRunnable() throws InterruptedException {
         Runnable runnable = Mockito.mock(Runnable.class);
 
         Runnable decoratedRunnable = mdcTaskDecorator.decorate(runnable);
@@ -33,7 +33,7 @@ public class MdcTaskDecoratorUnitTest {
     }
 
     @Test
-    public void decorateFillsAndClearsMDC() throws InterruptedException {
+    void decorateFillsAndClearsMDC() throws InterruptedException {
         Runnable mockRunnable = Mockito.mock(Runnable.class);
 
         MDC.put("testKey", "testValue");
