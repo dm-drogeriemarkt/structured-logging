@@ -79,6 +79,8 @@ class SpringMdcTaskDecoratorUnitTest {
         e.shutdown();
         e.awaitTermination(10, SECONDS);
 
+        Assertions.assertThat(MDC.get("testKey")).isEqualTo("testValue"); //value should still be set in main thread
+
         logCapture.assertLogged(WARN, "^MDC context was not set for runnable because it was run in a thread that already had a context.$")
                 .thenLogged(WARN, "^MDC context was not set for runnable because it was run in a thread that already had a context.$");
     }
