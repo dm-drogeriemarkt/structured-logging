@@ -2,18 +2,18 @@ package de.dm.prom.structuredlogging;
 
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
-import org.springframework.core.task.TaskDecorator;
 
 import java.util.Map;
 
 /**
- * task decorator for Spring - to put MDC information into another task, for example when @Async is used
+ * generic task decorator inspired by Spring's task decorator - to be used in other frameworks
+ * or if threads are created manually and should receive MDC context data
+ *
  * <p>
  * see the documentation on how to use this
  */
 @Slf4j
-public class MdcTaskDecorator implements TaskDecorator {
-    @Override
+public class MdcTaskDecorator {
     public Runnable decorate(Runnable runnable) {
         Map<String, String> contextMap = MDC.getCopyOfContextMap();
         return () -> {
