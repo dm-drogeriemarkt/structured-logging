@@ -1,6 +1,7 @@
 package de.dm.prom.structuredlogging;
 
 import ch.qos.logback.classic.Level;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.dm.infrastructure.logcapture.LogCapture;
@@ -30,18 +31,36 @@ class MdcContextUnitTest {
     public LogCapture logCapture = LogCapture.forCurrentPackage();
 
     @Test
-    void createTrnContext() throws IOException {
+    void createSampleContextWithContextId() throws IOException {
         try (MdcContext c = MdcContext.of(ExampleBeanId.class, ExampleBean.getExample())) {
-            String jsonStringFromMdc = MDC.get(new ExampleBeanId().getMdcKey());
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode sampleBeanTree = objectMapper.readTree(SAMPLE_BEAN_JSON);
-
-            Assertions.assertThat(jsonStringFromMdc).startsWith(JSON_PREFIX);
-            JsonNode treeFromMDC = objectMapper.readTree(jsonStringFromMdc.replaceFirst(JSON_PREFIX, ""));
-
-            Assertions.assertThat(treeFromMDC).isEqualTo(sampleBeanTree);
+            assertMdcFieldContentIsCorrect("example_bean");
         }
+    }
+
+    @Test
+    void createSampleContextWithClassOnly() throws IOException {
+        try (MdcContext c = MdcContext.of(ExampleBean.getExample())) {
+            assertMdcFieldContentIsCorrect("ExampleBean");
+        }
+    }
+
+    @Test
+    void createSampleContextWithKey() throws IOException {
+        try (MdcContext c = MdcContext.of("explicit_key", ExampleBean.getExample())) {
+            assertMdcFieldContentIsCorrect("explicit_key");
+        }
+    }
+
+    private void assertMdcFieldContentIsCorrect(String mdcFieldName) throws JsonProcessingException {
+        String jsonStringFromMdc = MDC.get(mdcFieldName);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode sampleBeanTree = objectMapper.readTree(SAMPLE_BEAN_JSON);
+
+        Assertions.assertThat(jsonStringFromMdc).startsWith(JSON_PREFIX);
+        JsonNode treeFromMDC = objectMapper.readTree(jsonStringFromMdc.replaceFirst(JSON_PREFIX, ""));
+
+        Assertions.assertThat(treeFromMDC).isEqualTo(sampleBeanTree);
     }
 
     @Test
