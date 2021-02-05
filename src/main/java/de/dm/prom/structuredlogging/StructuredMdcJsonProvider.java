@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * extension of MdcJsonProvider to log Json content from MdcContext as actual Json and not as a string that contains json
+ * extension of MdcJsonProvider to log Json content from MDC context as actual Json and not as a string that contains json
  * <p>
  * to be used with logstash to enable structured logging
  */

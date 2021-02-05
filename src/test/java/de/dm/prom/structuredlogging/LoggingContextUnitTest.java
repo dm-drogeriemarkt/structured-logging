@@ -17,7 +17,7 @@ import static de.dm.prom.structuredlogging.StructuredMdcJsonProvider.JSON_PREFIX
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
-class MdcContextUnitTest {
+class LoggingContextUnitTest {
     private static final String SAMPLE_BEAN_JSON = "{\"name\":\"John Doe\"," +
             "\"age\":35," +
             "\"importantTime\":\"2019-01-01T13:37\"," +
@@ -33,21 +33,21 @@ class MdcContextUnitTest {
 
     @Test
     void createSampleContextWithContextId() throws IOException {
-        try (MdcContext c = MdcContext.of(ExampleBeanKeySupplier.class, ExampleBean.getExample())) {
+        try (LoggingContext c = LoggingContext.of(ExampleBeanKeySupplier.class, ExampleBean.getExample())) {
             assertMdcFieldContentIsCorrect("example_bean", SAMPLE_BEAN_JSON);
         }
     }
 
     @Test
     void createSampleContextWithClassOnly() throws IOException {
-        try (MdcContext c = MdcContext.of(ExampleBean.getExample())) {
+        try (LoggingContext c = LoggingContext.of(ExampleBean.getExample())) {
             assertMdcFieldContentIsCorrect("ExampleBean", SAMPLE_BEAN_JSON);
         }
     }
 
     @Test
     void createSampleContextWithKey() throws IOException {
-        try (MdcContext c = MdcContext.of("explicit_key", ExampleBean.getExample())) {
+        try (LoggingContext c = LoggingContext.of("explicit_key", ExampleBean.getExample())) {
             assertMdcFieldContentIsCorrect("explicit_key", SAMPLE_BEAN_JSON);
         }
     }
@@ -69,9 +69,9 @@ class MdcContextUnitTest {
         String mdcKey = new StringKeySupplier().getMdcKey();
         String mdcValue = "test value"; //JSON strings are expected at this point
         String updatedValue = "updated value";
-        try (MdcContext c = MdcContext.of(StringKeySupplier.class, mdcValue)) {
+        try (LoggingContext c = LoggingContext.of(StringKeySupplier.class, mdcValue)) {
             assertThat(MDC.get(mdcKey)).isEqualTo(String.format("%s\"%s\"", JSON_PREFIX, mdcValue));
-            MdcContext.update(StringKeySupplier.class, updatedValue);
+            LoggingContext.update(StringKeySupplier.class, updatedValue);
             assertThat(MDC.get(mdcKey)).isEqualTo(String.format("%s\"%s\"", JSON_PREFIX, updatedValue));
         }
         assertThat(MDC.get(mdcKey)).isNull();
@@ -82,11 +82,11 @@ class MdcContextUnitTest {
         ExampleBean exampleBean = ExampleBean.getExample();
         String mdcKey = "custom_key";
 
-        try (MdcContext c = MdcContext.of(mdcKey, exampleBean)) {
+        try (LoggingContext c = LoggingContext.of(mdcKey, exampleBean)) {
             assertMdcFieldContentIsCorrect(mdcKey, SAMPLE_BEAN_JSON);
             String updatedName = "Jack Frost";
             exampleBean.setName(updatedName);
-            MdcContext.update(mdcKey, exampleBean);
+            LoggingContext.update(mdcKey, exampleBean);
             assertMdcFieldContentIsCorrect(mdcKey, SAMPLE_BEAN_JSON.replace("John Doe", updatedName));
         }
         assertThat(MDC.get(mdcKey)).isNull();
@@ -97,11 +97,11 @@ class MdcContextUnitTest {
         ExampleBean exampleBean = ExampleBean.getExample();
         String mdcKey = "ExampleBean";
 
-        try (MdcContext c = MdcContext.of(exampleBean)) {
+        try (LoggingContext c = LoggingContext.of(exampleBean)) {
             assertMdcFieldContentIsCorrect(mdcKey, SAMPLE_BEAN_JSON);
             String updatedName = "Jack Frost";
             exampleBean.setName(updatedName);
-            MdcContext.update(exampleBean);
+            LoggingContext.update(exampleBean);
             assertMdcFieldContentIsCorrect(mdcKey, SAMPLE_BEAN_JSON.replace("John Doe", updatedName));
         }
         assertThat(MDC.get(mdcKey)).isNull();
@@ -109,9 +109,9 @@ class MdcContextUnitTest {
 
     @Test
     void failedUpdate() throws Exception {
-        MdcContext.update(ExampleBean.getExample());
+        LoggingContext.update(ExampleBean.getExample());
 
-        logCapture.assertLogged(WARN, "^Cannot update content of MDC key ExampleBean in .*\\.failedUpdate\\(MdcContextUnitTest.java:[0-9]+\\) because it does not exist.$");
+        logCapture.assertLogged(WARN, "^Cannot update content of MDC key ExampleBean in .*\\.failedUpdate\\(LoggingContextUnitTest.java:[0-9]+\\) because it does not exist.$");
     }
 
     @Test
@@ -123,11 +123,11 @@ class MdcContextUnitTest {
 
         String mdcKey = new StringKeySupplier().getMdcKey();
 
-        try (MdcContext c = MdcContext.of(StringKeySupplier.class, someValue)) {
+        try (LoggingContext c = LoggingContext.of(StringKeySupplier.class, someValue)) {
             assertThat(MDC.get(mdcKey)).isEqualTo(someValueJson);
-            try (MdcContext inner = MdcContext.of(StringKeySupplier.class, someValue)) {
+            try (LoggingContext inner = LoggingContext.of(StringKeySupplier.class, someValue)) {
                 assertThat(MDC.get(mdcKey)).isEqualTo(someValueJson);
-                try (MdcContext sameIdWithDifferentValue = MdcContext.of(StringKeySupplier.class, otherValue)) {
+                try (LoggingContext sameIdWithDifferentValue = LoggingContext.of(StringKeySupplier.class, otherValue)) {
                     assertThat(MDC.get(mdcKey)).isEqualTo(otherValueJson);
                 }
                 assertThat(MDC.get(mdcKey)).isEqualTo(someValueJson);
@@ -137,10 +137,10 @@ class MdcContextUnitTest {
         assertThat(MDC.get(mdcKey)).isNull();
 
         logCapture
-                .assertLogged(WARN, "^Overwriting MDC key string_sample in .*\\.accidentallyOverwriteMDCValue\\(MdcContextUnitTest.java:[0-9]+\\) " +
+                .assertLogged(WARN, "^Overwriting MDC key string_sample in .*\\.accidentallyOverwriteMDCValue\\(LoggingContextUnitTest.java:[0-9]+\\) " +
                         "- a context with a certain key should never contain another context with the same one. " +
                         "The value is overwritten with the same value. This is superfluous and should be removed.")
-                .thenLogged(Level.ERROR, "^Overwriting MDC key string_sample in .*\\.accidentallyOverwriteMDCValue\\(MdcContextUnitTest.java:[0-9]+\\) " +
+                .thenLogged(Level.ERROR, "^Overwriting MDC key string_sample in .*\\.accidentallyOverwriteMDCValue\\(LoggingContextUnitTest.java:[0-9]+\\) " +
                         "- a context with a certain key should never contain another context with the same one. " +
                         "The old value differs from new value. This should never happen, because it messes up the MDC context. " +
                         "Old value: MDC_JSON_VALUE:\"some value\" - new value: MDC_JSON_VALUE:\"other value\"");
