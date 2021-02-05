@@ -30,6 +30,21 @@ public final class MdcContext<SerializedType, MdcIdType extends MdcContextId<Ser
     private final String oldValue; //MDC value outside this context
     private final String key;
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    static {
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(Instant.class, new ToStringSerializer());
+        module.addSerializer(LocalDate.class, new ToStringSerializer());
+        module.addSerializer(LocalDateTime.class, new ToStringSerializer());
+        module.addSerializer(OffsetDateTime.class, new ToStringSerializer());
+        module.addSerializer(OffsetTime.class, new ToStringSerializer());
+        module.addSerializer(Period.class, new ToStringSerializer());
+        module.addSerializer(ZonedDateTime.class, new ToStringSerializer());
+
+        OBJECT_MAPPER.registerModule(module);
+    }
+
     /**
      * create an MDC context
      * <p>
@@ -109,26 +124,11 @@ public final class MdcContext<SerializedType, MdcIdType extends MdcContextId<Ser
         //needs to be an object, not a string, for Kibana. Otherwise, Kibana will throw away the log entry because the field has the wrong type.
 
         try {
-            objectToJson = getObjectMapper().writeValueAsString(object);
+            objectToJson = OBJECT_MAPPER.writeValueAsString(object);
         } catch (JsonProcessingException e) {
             log.error("Object cannot be serialized {}. ({})", object, e);
         }
         return objectToJson;
-    }
-
-    private static ObjectMapper getObjectMapper() {
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(Instant.class, new ToStringSerializer());
-        module.addSerializer(LocalDate.class, new ToStringSerializer());
-        module.addSerializer(LocalDateTime.class, new ToStringSerializer());
-        module.addSerializer(OffsetDateTime.class, new ToStringSerializer());
-        module.addSerializer(OffsetTime.class, new ToStringSerializer());
-        module.addSerializer(Period.class, new ToStringSerializer());
-        module.addSerializer(ZonedDateTime.class, new ToStringSerializer());
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(module);
-        return objectMapper;
     }
 
     private static String putToMDCwithOverwriteWarning(String key, String newValue) {
