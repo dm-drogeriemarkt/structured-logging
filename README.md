@@ -1,53 +1,44 @@
-# structured-logging
+# Structured Logging [<img src="https://opensourcelogos.aws.dmtech.cloud/dmTECH_opensource_logo.svg" height="20" width="130">](https://dmtech.de/) [![Build Status](https://travis-ci.org/dm-drogeriemarkt/structured-logging.svg?branch=master)](https://travis-ci.org/dm-drogeriemarkt/structured-logging) 
 
-[<img src="https://opensourcelogos.aws.dmtech.cloud/dmTECH_opensource_logo.svg" height="20" width="130">](https://dmtech.de/)
-[![Build Status](https://travis-ci.org/dm-drogeriemarkt/structured-logging.svg?branch=master)](https://travis-ci.org/dm-drogeriemarkt/structured-logging) 
+Structured Logging is a library that
 
-Structured logging utility. 
+* helps augment log messages with information about the context in which they happen.
+* manages
+  * the lifetime of the context information
+  * serialization of the context information
 
-* Designed to work with **logback**.
-* Works with log consumers that can digest JSON logs, like the **ELK Stack** or **Datadog**.
-* Framework agnostic (works well with **Spring**, because Spring Boot uses logback out of the box) 
+---
 
 **Table of Contents**
 
-* [Why use this?](#why-use-this)
 * [Example](#example)
+* [Advantages](#advantages)
+  * [Advantages over plain logging](#advantages-over-plain-logging)
+  * [Advantages over using MDC directly](#advantages-over-using-mdc-directly)
+* [Prerequisites](#prerequisites)
 * [Changes](#changes)
+  * [2.0.0](#200)
   * [1.0.3](#103)
-* [Usage](#usage)
-  * [Add structured-logging as a dependency](#add-structured-logging-as-a-dependency)
+* [Basic Usage](#basic-usage)
+  * [Step 1: Add structured-logging as a dependency](#step-1-add-structured-logging-as-a-dependency)
+  * [Step 2: Configure Logback](#step-2-configure-logback)
+  * [Step 2: Put Objects into the logging context](#step-2-put-objects-into-the-logging-context)
+* [Advanced usage](#advanced-usage)
   * [Define how Objects should be named in MDC](#define-how-objects-should-be-named-in-mdc)
-  * [Put Objects into MDC](#put-objects-into-mdc)
-    * [Excluding properties from serialization](#excluding-properties-from-serialization)
-  * [Configure Logback for Logstash](#configure-logback-for-logstash)
+    * [Manual key definition](#manual-key-definition)
+    * [Manual key definition via MdcKeySupplier](#manual-key-definition-via-mdckeysupplier)
+  * [Excluding properties from serialization](#excluding-properties-from-serialization)
   * [Configure a Task Decorator in Spring](#configure-a-task-decorator-in-spring)
   * [Test your logging](#test-your-logging)
 
-## Why use this?
-
-If you use your logs for monitoring, alerting or visualization, you want them to have structured information so you can properly build your monitoring/alerting/visualizations on that.
-
-You can attach information (key/value) to log messages with [MDC](https://logback.qos.ch/manual/mdc.html). Pure MDC, however, has some shortcomings:
-
-* It is a pure key/value store where you can store strings. There is no further hierarchical structure.
-* You need to manually make sure to remove the key/value when you leave a certain context.
-
-To solve this problem, **structured–logging** is built on MDC/logback and provides:
-
-* Structured logging that
-  * simply serializes beans to provide structured information
-  * defines the MDC key for a certain type in one place
-* MDC management to make sure that
-  * information is removed from MDC when it is not relevant anymore
-  * conflicting contexts (same key) don't overlap
+---
 
 ## Example
 
 If there are log messages that happen in the context of an order, you may want to attach information about that order to these log messages.
 
 ```java
-    try (MdcContext c = MdcContext.of(OrderKey.class, incomingOrder)) {
+    try (var c = LoggingContext.of(incomingOrder)) {
         log.info("A new order has come in.");
         if (isValid(incomingOrder)) {
             prepareForDelivery(incomingOrder);
@@ -57,20 +48,48 @@ If there are log messages that happen in the context of an order, you may want t
     }
 ```
 
-## Changes
+Used like this, the `incomingOrder` will be attached to the log message generated in this `try`block, including 
 
-### 1.0.3
+* the message from `log.info("A new order has come in.")` .
+* all messages logged by `prepareForDelivery(...)` and the methods called by that method
 
-* Added proper serialization for further JSR310 types. Now properly serializes
-  * Instant (new)
-  * LocalDate (new)
-  * LocalDateTime
-  * OffsetDateTime
-  * OffsetTime (new)
-  * Period (new)
-  * ZonedDateTime (new)
+Here's how this would look in Kibana:
 
-## Usage
+![Kibana-Example](docs/structured-logging-kibana.png)
+
+## Advantages
+
+This approach has various advantages over both plain logging as well as using MDC directly.
+
+### Advantages over plain logging
+
+* If you log context information, you can easily trace the order from the example above by filtering by `incomingOrder.id : 1234`
+* Search becomes easier if die log message itself does not vary that much (just search for `message : "A new order has come in."`)
+* Because the type of fields can be inferred, you can for example search by `incomingOrder.paymentDate > 2020-01-01`
+* Everything that is relevant in the context of the log message is attached to it, even if you didn't think of it when writing that specific log message.
+* You can do alerting and monitoring based on specific MDC values. Want to know the summary monetary value of those `incomingOrder`s in the example above? You can now do that.
+
+### Advantages over using MDC directly
+
+Structured Logging adds crucial features missing from plain [MDC](http://logback.qos.ch/manual/mdc.html), even when using MDC's [putCloseable](http://www.slf4j.org/api/org/slf4j/MDC.html#putCloseable(java.lang.String,java.lang.String)):
+
+* Proper serialization of complex objects and their fields is taken care of. MDC itself does not support a hierarchical structure, although most log processors like logstash do support it.
+* MDC is properly cleared, even if the key has been set before. In that case, it's reset to what it was before the `try` block.
+* If a task in another thread is started, context information is retained because it is still relevant. This is solved by providing a custom Task Decorator (see below).
+
+## Prerequisites
+
+For creating logs:
+
+* You need to use **Slf4j** as your logging facade.
+* You need to use **logback** as your logging implementation.
+* **Optionally**, you can use **Spring (Boot)** which uses both of these per default and already lets you register Task Decorators. But other frameworks (or no framework) work just as well.
+
+For consuming logs:
+
+* Works with log consumers that can digest JSON logs, like the **ELK Stack** or **Datadog**. The consumer needs to support hierarchical data in a log message. **Greylog does not** support this at the moment, for example.
+
+## Basic Usage
 
 To use this, you need to:
 
@@ -82,7 +101,7 @@ To use this, you need to:
  * [Configure a Task Decorator in Spring](#Configure-a-Task-Decorator-in-Spring)
  * [Test your logging](#Test-your-logging)
 
-### Add structured-logging as a dependency
+### Step 1: Add structured-logging as a dependency
 
 If you use maven, add this to your pom.xml:
 
@@ -90,51 +109,116 @@ If you use maven, add this to your pom.xml:
 <dependency>
     <groupId>de.dm.infrastructure</groupId>
     <artifactId>structured-logging</artifactId>
-    <version>1.0.3</version>
+    <version>2.0.0</version>
     <scope>test</scope>
 </dependency>
 ```
 
+### Step 2: Configure Logback
+
+To log the whole log message including the object you put into MDC as Json, you need to configure Logback to use the **LogstashEncoder** and **StructuredMdcJsonProvider**.
+
+The following configuration can be used as an example:
+
+```xml
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <appender name="JSON_FILE" class="ch.qos.logback.core.FileAppender">
+        <!-- use LogstashEncoder to log as JSON -->
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <!-- use StructuredMdcJsonProvider to log structured data as json in MDC fields -->
+            <provider class="de.dm.infrastructure.structuredlogging.StructuredMdcJsonProvider"/>
+        </encoder>
+        <file>${LOG_LOCATION}</file>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="JSON_FILE"/>
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>
+
+```
+
+### Step 2: Put Objects into the logging context
+
+Create a new `LoggingContext` in a try-with-resources statement to define the scope in which context information should be set:
+
+```java
+log.info("a message without context");
+
+TimeMachine timeMachine = TimeMachineBuilder.build();
+
+try (var c = LoggingContext.of(timeMachine)) {
+    log.info("time machine found. Trying to use it");
+
+    travelSomewhereWith(timeMachine);
+    
+    timeMachine.setFluxFactor(42);
+
+    LoggingContextupdate(timeMachine);
+
+    travelSomewhereWith(timeMachine);
+}
+
+log.info("another message without context");
+}
+
+void travelSomewhereWith(TimeMachine timeMachine) {
+    log.info("Where we’re going, we don’t need roads.");
+
+    ...
+}
+```
+
+## Advanced usage
+
 ### Define how Objects should be named in MDC
 
-Define what the MDC key of a certain object type should be by implementing `MdcContextId<T>`:
+There are three ways to define the MDC key for the objects you put into the context:
+
+1. Use the default (the shortName of the type, as seen in the Basic Usage)
+1. Define it manually
+1. Provide a MdcKeySupplier to make sure you always give the same key to the same type
+
+#### Manual key definition
 
 ```java
-public final class MyBeanKey implements MdcContextId<MyBean>
+try (var c = LoggingContext.of("de_lorean", timeMachine)) {
+    ...
+    
+    timeMachine.setFluxFactor(42);
+
+    LoggingContextupdate("de_lorean", timeMachine);
+}
+```
+
+#### Manual key definition via MdcKeySupplier
+
+```java
+// must be public and have a public, non-parameterized constructor
+public final class TimeMachineKey implements MdcKeySupplier<TimeMachine>
     @Override
     public String getMdcKey() {
-        return "my_bean";
+        return "de_lorean";
     }
+}
+
+...
+
+//LoggingContext.of(...) is defined so that you can only use TimeMachineKey with a TimeMachine.
+try (var c = LoggingContext.of(TimeMachineKey.class, timeMachine)) {
+    ...
+    
+    timeMachine.setFluxFactor(42);
+
+    LoggingContextupdate(TimeMachineKey.class, timeMachine);
 }
 ```
 
-Make sure that your `MdcContextKey`
-
-* is `public`
-* has a `public`, non-parameterized constructor
-
-### Put Objects into MDC
-
-Create a new `MdcContext` in a try-with-resources statement to define in which scope certain MDC information should be set:
-
-```java
-void doSomething(MyBean myBean) {
-    log.info("a message without MyBean context");
-
-    try (MdcContext c = MdcContext.of(MyBean.class, myBean)) {
-        log.info("a message with MyBean context");
-        doSomethingElse(myBean);
-    }
-
-    log.info("another message without MyBean context");
-}
-
-void doSomethingElse(MyBean myBean) {
-    log.info("another message with MyBean context");
-}
-```
-
-#### Excluding properties from serialization
+### Excluding properties from serialization
 
 Json serialization is done with Jackson, so you can use the `com.fasterxml.jackson.annotation.JsonIgnore` annotation to exclude fields (or getters) from serialization.
 
@@ -149,39 +233,9 @@ Json serialization is done with Jackson, so you can use the `com.fasterxml.jacks
     }
 ```
 
-### Configure Logback for Logstash
-
-Objects are put into MDC because they contain structured information. To make sure this is understood as structured information, you need to make sure that logback is configured correctly.
-
-To log the whole log message including the object you put into MDC as Json, you need to configure Logback to use the **LogstashEncoder**.
-
-The **LogstashEncoder** in turn must know about the **StructuredMdcJsonProvider** to properly encode the structured JSON information from MDC.
-
-To log into a file as Json with Spring, you can use this configuration:
-
-```xml
-<configuration>
-    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
-
-    <appender name="JSON_FILE" class="ch.qos.logback.core.FileAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <provider class="de.dm.infrastructure.structuredlogging.StructuredMdcJsonProvider"/>
-        </encoder>
-        <file>${LOG_LOCATION}</file>
-    </appender>
-
-    <root level="INFO">
-        <appender-ref ref="JSON_FILE"/>
-        <appender-ref ref="CONSOLE"/>
-    </root>
-</configuration>
-
-```
-
 ### Configure a Task Decorator in Spring
 
-When you start another thread, MDC will be empty. Usually, you probably want to remain in the same MdcContext, though.
+When you start another thread, MDC will be empty. Usually, you probably want to remain in the same LoggingContext, though.
 
 If you use Spring and start the other thread by calling an `@Async` method, this can be easily solved by making Spring use the `MdcTaskdecorator`.
 
@@ -211,3 +265,18 @@ If you already configured various Executors, just add `.setTaskDecorator(new Mdc
 If you use **structured-logging** and thus use your logs for monitoring, alerting or visualization, they become a functional requirement and should be tested.
 
 The tests for **structured-logging** itself are implemented with **[log-capture](https://github.com/dm-drogeriemarkt/log-capture)**, which can be easily used from JUnit or Cucumber.
+
+## Changes
+
+### 2.0.0
+
+### 1.0.3
+
+* Added proper serialization for further JSR310 types. Now properly serializes
+  * Instant (new)
+  * LocalDate (new)
+  * LocalDateTime
+  * OffsetDateTime
+  * OffsetTime (new)
+  * Period (new)
+  * ZonedDateTime (new)
