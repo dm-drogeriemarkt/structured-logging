@@ -89,17 +89,7 @@ For consuming logs:
 
 * Works with log consumers that can digest JSON logs, like the **ELK Stack** or **Datadog**. The consumer needs to support hierarchical data in a log message. **Greylog does not** support this at the moment, for example.
 
-## Basic Usage
-
-To use this, you need to:
-
- * [Add structured-logging as a dependency](#add-structured-logging-as-a-dependency)
- * [Define how Objects should be named in MDC](#Define-how-Objects-should-be-named-in-MDC)
- * [Put Objects into MDC](#Put-Objects-into-MDC)
-    * [Excluding properties from serialization](#Excluding-properties-from-serialization)
- * [Configure Logback for Logstash](#Configure-Logback-for-Logstash)
- * [Configure a Task Decorator in Spring](#Configure-a-Task-Decorator-in-Spring)
- * [Test your logging](#Test-your-logging)
+## Getting Started
 
 ### Step 1: Add structured-logging as a dependency
 
@@ -142,7 +132,7 @@ The following configuration can be used as an example:
 
 ```
 
-### Step 2: Put Objects into the logging context
+### Step 3: Put Objects into the logging context
 
 Create a new `LoggingContext` in a try-with-resources statement to define the scope in which context information should be set:
 
