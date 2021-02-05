@@ -148,7 +148,7 @@ try (var c = LoggingContext.of(timeMachine)) {
     
     timeMachine.setFluxFactor(42);
 
-    LoggingContextupdate(timeMachine);
+    LoggingContext.update(timeMachine);
 
     travelSomewhereWith(timeMachine);
 }
@@ -181,7 +181,7 @@ try (var c = LoggingContext.of("de_lorean", timeMachine)) {
     
     timeMachine.setFluxFactor(42);
 
-    LoggingContextupdate("de_lorean", timeMachine);
+    LoggingContext.update("de_lorean", timeMachine);
 }
 ```
 
@@ -204,7 +204,7 @@ try (var c = LoggingContext.of(TimeMachineKey.class, timeMachine)) {
     
     timeMachine.setFluxFactor(42);
 
-    LoggingContextupdate(TimeMachineKey.class, timeMachine);
+    LoggingContext.update(TimeMachineKey.class, timeMachine);
 }
 ```
 
@@ -213,7 +213,7 @@ try (var c = LoggingContext.of(TimeMachineKey.class, timeMachine)) {
 Json serialization is done with Jackson, so you can use the `com.fasterxml.jackson.annotation.JsonIgnore` annotation to exclude fields (or getters) from serialization.
 
 ```java
-    public class MyBean {
+    public class TimeMachine {
         ...
 
         @JsonIgnore
@@ -223,7 +223,7 @@ Json serialization is done with Jackson, so you can use the `com.fasterxml.jacks
     }
 ```
 
-### Configure a Task Decorator in Spring
+### Configure a Task Decorator in Spring (Optional, make it Step 2a)
 
 When you start another thread, MDC will be empty. Usually, you probably want to remain in the same LoggingContext, though.
 
