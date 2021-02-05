@@ -250,7 +250,7 @@ public class AsyncThreadConfiguration {
 
 If you already configured various Executors, just add `.setTaskDecorator(new MdcTaskDecorator())` to them.
 
-### Test your logging
+### Test your logging (Optional, Step 4)
 
 If you use **structured-logging** and thus use your logs for monitoring, alerting or visualization, they become a functional requirement and should be tested.
 
