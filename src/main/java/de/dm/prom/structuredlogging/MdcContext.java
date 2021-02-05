@@ -21,12 +21,9 @@ import java.time.ZonedDateTime;
  * When that block is done, the respective information is removed from MDC
  * <p>
  * see the documentation for an example
- *
- * @param <SerializedType> the type of the object to serialize
- * @param <MdcIdType> an implementation of MdcContextId that defines the field into which the serialized object is written
  */
 @Slf4j
-public final class MdcContext<SerializedType, MdcIdType extends MdcContextId<SerializedType>> implements java.io.Closeable {
+public final class MdcContext implements java.io.Closeable {
     private final String oldValue; //MDC value outside this context
     private final String key;
 
@@ -50,22 +47,22 @@ public final class MdcContext<SerializedType, MdcIdType extends MdcContextId<Ser
      * <p>
      * use this to construct an MDC context ensuring that the same key is always used for a certain type
      *
-     * @param type {@link MdcContextId} implementation to describe which MDC key to use
+     * @param keySupplier {@link de.dm.prom.structuredlogging.MdcKeySupplier} implementation to describe which MDC key to use
      * @param mdcValue the object to write to MDC
-     * @param <SerializedType> the type of the object to serialize
-     * @param <MdcIdType> an implementation of MdcContextId that defines the MDC key for a certain type
+     * @param <T> the type of the object to serialize
+     * @param <S> an implementation of MdcKeySupplier that supplies the MDC key for a certain type
      *
      * @return an MDC context to use in a try-with-resources block
      */
-    public static <SerializedType, MdcIdType extends MdcContextId<SerializedType>> MdcContext<SerializedType, MdcIdType> of(Class<MdcIdType> type, SerializedType mdcValue) {
+    public static <T, S extends MdcKeySupplier<T>> MdcContext of(Class<S> keySupplier, T mdcValue) {
         try {
-            MdcContextId<SerializedType> id = type.getDeclaredConstructor().newInstance();
-            return new MdcContext<>(id.getMdcKey(), mdcValue);
+            MdcKeySupplier<T> id = keySupplier.getDeclaredConstructor().newInstance();
+            return new MdcContext(id.getMdcKey(), mdcValue);
         } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
             log.error("Cannot put key of type {} to MDC because no new instance of {} can be created: {}",
-                    mdcValue.getClass().getSimpleName(), type.getSimpleName(), e.getMessage());
+                    mdcValue.getClass().getSimpleName(), keySupplier.getSimpleName(), e.getMessage());
         }
-        return new MdcContext<>(mdcValue.getClass().getSimpleName(), mdcValue);
+        return new MdcContext(mdcValue.getClass().getSimpleName(), mdcValue);
     }
 
     /**
@@ -77,13 +74,11 @@ public final class MdcContext<SerializedType, MdcIdType extends MdcContextId<Ser
      *
      * @param mdcKey MDC key to use
      * @param mdcValue the object to write to MDC
-     * @param <SerializedType> the type of the object to serialize
-     * @param <MdcIdType> an implementation of MdcContextId that defines the MDC key for a certain type
      *
      * @return an MDC context to use in a try-with-resources block
      */
-    public static <SerializedType, MdcIdType extends MdcContextId<SerializedType>> MdcContext<SerializedType, MdcIdType> of(String mdcKey, SerializedType mdcValue) {
-        return new MdcContext<>(mdcKey, mdcValue);
+    public static MdcContext of(String mdcKey, Object mdcValue) {
+        return new MdcContext(mdcKey, mdcValue);
     }
 
     /**
@@ -96,16 +91,63 @@ public final class MdcContext<SerializedType, MdcIdType extends MdcContextId<Ser
      * See {@link MdcContext#of(String, Object)} if you want to manually define the MDC key
      *
      * @param mdcValue the object to write to MDC
-     * @param <SerializedType> the type of the object to serialize
-     * @param <T> not relevant for this static constructor
      *
      * @return an MDC context to use in a try-with-resources block
      */
-    public static <SerializedType, T extends MdcContextId<SerializedType>> MdcContext<SerializedType, T> of(SerializedType mdcValue) {
-        return new MdcContext<>(mdcValue.getClass().getSimpleName(), mdcValue);
+    public static MdcContext of(Object mdcValue) {
+        return new MdcContext(mdcValue.getClass().getSimpleName(), mdcValue);
     }
 
-    private MdcContext(String key, SerializedType value) {
+    /**
+     * update an existing MDC context
+     * <p>
+     * use this to update an MDC context ensuring that the same key is always used for a certain type
+     *
+     * @param keySupplier {@link MdcKeySupplier} implementation to describe which MDC key to use
+     * @param mdcValue the object to write to MDC
+     * @param <T> the type of the object to serialize
+     * @param <S> an implementation of MdcKeySupplier that supplies the MDC key for a certain type
+     */
+    public static <T, S extends MdcKeySupplier<T>> void update(Class<S> keySupplier, T mdcValue) {
+        try {
+            MdcKeySupplier<T> id = keySupplier.getDeclaredConstructor().newInstance();
+            updateMdcContent(id.getMdcKey(), toJson(mdcValue));
+        } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
+            log.error("Cannot update MDC with type {} because no new instance of {} can be created: {}",
+                    mdcValue.getClass().getSimpleName(), keySupplier.getSimpleName(), e.getMessage());
+        }
+    }
+
+    /**
+     * update an existing MDC context
+     * <p>
+     * use this to update an MDC context with a manually defined key
+     * <p>
+     * See {@link MdcContext#of(Class, Object)} if you want to ensure that the same key is always used for a certain type
+     *
+     * @param mdcKey MDC key to use
+     * @param mdcValue the object to write to MDC
+     */
+    public static void update(String mdcKey, Object mdcValue) {
+        updateMdcContent(mdcKey, toJson(mdcValue));
+    }
+
+    /**
+     * update an existing MDC context
+     * <p>
+     * use this to update an MDC context that uses the serialized object's simpleName as the MDC key
+     * <p>
+     * See {@link MdcContext#of(Class, Object)} if you want to ensure that the same MDC key is always used for a certain type
+     * <p>
+     * See {@link MdcContext#of(String, Object)} if you want to manually define the MDC key
+     *
+     * @param mdcValue the object to write to MDC
+     */
+    public static void update(Object mdcValue) {
+        updateMdcContent(mdcValue.getClass().getSimpleName(), toJson(mdcValue));
+    }
+
+    private MdcContext(String key, Object value) {
         this.key = key;
         oldValue = putToMDCwithOverwriteWarning(key, toJson(value));
     }
@@ -151,5 +193,21 @@ public final class MdcContext<SerializedType, MdcIdType extends MdcContextId<Ser
         } else {
             log.warn("{} The value is overwritten with the same value. This is superfluous and should be removed.", message);
         }
+    }
+
+    private static void updateMdcContent(String key, String newValue) {
+        newValue = StructuredMdcJsonProvider.JSON_PREFIX + newValue;
+        String oldValue = MDC.get(key);
+        if (oldValue == null) {
+            logFailedUpdate(key);
+        } else {
+            MDC.put(key, newValue);
+        }
+    }
+
+    private static void logFailedUpdate(String key) {
+        StackTraceElement caller = Thread.currentThread().getStackTrace()[4]; //always [4] because of call depth
+        log.warn("Cannot update content of MDC key {} in {}.{}({}:{}) because it does not exist.",
+                key, caller.getClassName(), caller.getMethodName(), caller.getFileName(), caller.getLineNumber());
     }
 }
