@@ -16,13 +16,10 @@ Structured Logging is a library that
   * [Advantages over plain logging](#advantages-over-plain-logging)
   * [Advantages over using MDC directly](#advantages-over-using-mdc-directly)
 * [Prerequisites](#prerequisites)
-* [Changes](#changes)
-  * [2.0.0](#200)
-  * [1.0.3](#103)
-* [Basic Usage](#basic-usage)
+* [Getting Started](#getting-started)
   * [Step 1: Add structured-logging as a dependency](#step-1-add-structured-logging-as-a-dependency)
   * [Step 2: Configure Logback](#step-2-configure-logback)
-  * [Step 2: Put Objects into the logging context](#step-2-put-objects-into-the-logging-context)
+  * [Step 3: Put Objects into the logging context](#step-3-put-objects-into-the-logging-context)
 * [Advanced usage](#advanced-usage)
   * [Define how Objects should be named in MDC](#define-how-objects-should-be-named-in-mdc)
     * [Manual key definition](#manual-key-definition)
@@ -30,6 +27,9 @@ Structured Logging is a library that
   * [Excluding properties from serialization](#excluding-properties-from-serialization)
   * [Configure a Task Decorator in Spring](#configure-a-task-decorator-in-spring)
   * [Test your logging](#test-your-logging)
+* [Changes](#changes)
+  * [2.0.0](#200)
+  * [1.0.3](#103)
 
 ---
 
