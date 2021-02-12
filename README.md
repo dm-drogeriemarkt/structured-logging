@@ -286,8 +286,12 @@ exclude fields (or getters) from serialization.
 
 ### 2.0.0
 
+* New Feature: Added convenience methods for creating MdcContexts without having an MdcKeySupplier.
+* New Feature: MdcContext can now be updated in case the Bean that it describes is updated.
+* New Feature: Runnables can now directly be decorated via `MdcTaskDecorator` to retain MDC information even when not using Spring.
 * Breaking Change: Renamed MdcContextId to MdcKeySupplier to make its purpose clear
-* Runnables can now directly be decorated via `MdcTaskDecorator` to retain MDC information even when not using Spring.
+* Fix: Do not create ObjectMapper every time an MdcContext is created.
+* Fix: Do not overwrite MDC information in threads that already have a context in MdcTaskDecorator - a WARNing is logged instead because this indicates incorrect usage
 
 ### 1.0.3
 
