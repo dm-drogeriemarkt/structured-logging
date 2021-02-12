@@ -80,8 +80,7 @@ using MDC's [putCloseable](http://www.slf4j.org/api/org/slf4j/MDC.html#putClosea
 
 * Proper serialization of complex objects and their fields is taken care of. MDC itself does not support a hierarchical
   structure, although most log processors like logstash do support it.
-* MDC is properly cleared, even if the key has been set before. In that case, it's reset to what it was before the `try`
-  block.
+* MDC is properly reset after the `try` block if it contained another value before.
 * If a task in another thread is started, context information is retained because it is still relevant. This is solved
   by providing a custom Task Decorator (see below).
 
@@ -89,7 +88,7 @@ using MDC's [putCloseable](http://www.slf4j.org/api/org/slf4j/MDC.html#putClosea
 
 For creating logs:
 
-* You need to use **Slf4j** as your logging facade.
+* You need to use **SLF4J** as your logging facade.
 * You need to use **logback** as your logging implementation.
 * **Optionally**, you can use **Spring (Boot)** which uses both of these per default and already lets you register Task
   Decorators. But other frameworks (or no framework) work just as well.
@@ -116,8 +115,7 @@ If you use maven, add this to your pom.xml:
 
 ### Step 2: Configure Logback
 
-To log the whole log message including the object you put into MDC as Json, you need to configure Logback to use the **
-LogstashEncoder** and **StructuredMdcJsonProvider**.
+To log the whole log message including the object you put into MDC as Json, you need to configure Logback to use the **LogstashEncoder** and **StructuredMdcJsonProvider**.
 
 The following configuration can be used as an example:
 
@@ -152,28 +150,22 @@ be set:
 ```java
 log.info("a message without context");
 
-        TimeMachine timeMachine=TimeMachineBuilder.build();
+TimeMachine timeMachine=TimeMachineBuilder.build();
 
-        try(var c=MdcContext.of(timeMachine)){
-        log.info("time machine found. Trying to use it");
+//set the MdcContext as soon as possible after object (timeMachine) creation
+try(var c = MdcContext.of(timeMachine)){
+    log.info("time machine found. Trying to use it");
 
-        travelSomewhereWith(timeMachine);
+    travelSomewhereWith(timeMachine);
 
-        timeMachine.setFluxFactor(42);
+    timeMachine.setFluxFactor(42);
 
-        MdcContext.update(timeMachine);
+    MdcContext.update(timeMachine);
 
-        travelSomewhereWith(timeMachine);
-        }
+    travelSomewhereWith(timeMachine);
+}
 
-        log.info("another message without context");
-        }
-
-        void travelSomewhereWith(TimeMachine timeMachine){
-        log.info("Where we’re going, we don’t need roads.");
-
-        ...
-        }
+log.info("another message without context");
 ```
 
 ### Step 4: (Optional) Use the Task Decorator
