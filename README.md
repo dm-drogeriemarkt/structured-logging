@@ -14,21 +14,21 @@ its  [MDC](http://logback.qos.ch/manual/mdc.html) to
 
 * [Example](#example)
 * [Advantages](#advantages)
-    * [Advantages over plain logging](#advantages-over-plain-logging)
-    * [Advantages over using MDC directly](#advantages-over-using-mdc-directly)
+  * [Advantages over plain logging](#advantages-over-plain-logging)
+  * [Advantages over using MDC directly](#advantages-over-using-mdc-directly)
 * [Prerequisites](#prerequisites)
 * [Getting Started](#getting-started)
-    * [Step 1: Add structured-logging as a dependency](#step-1-add-structured-logging-as-a-dependency)
-    * [Step 2: Configure Logback](#step-2-configure-logback)
-    * [Step 3: Put Objects into the logging context](#step-3-put-objects-into-the-logging-context)
-    * [Step 4: (Optional) Use the Task Decorator](#step-4-optional-use-the-task-decorator)
-    * [Step 5: (also Optional) Test your logging](#step-5-also-optional-test-your-logging)
+  * [Step 1: Add structured-logging as a dependency](#step-1-add-structured-logging-as-a-dependency)
+  * [Step 2: Configure Logback](#step-2-configure-logback)
+  * [Step 3: Put Objects into the logging context](#step-3-put-objects-into-the-logging-context)
+  * [Step 4: (Optional) Use the Task Decorator](#step-4-optional-use-the-task-decorator)
+  * [Step 5: (also Optional) Test your logging](#step-5-also-optional-test-your-logging)
 * [Advanced usage](#advanced-usage)
-    * [Define how Objects should be named in MDC](#define-how-objects-should-be-named-in-mdc)
-    * [Excluding properties from serialization](#excluding-properties-from-serialization)
+  * [Define how Objects should be named in MDC](#define-how-objects-should-be-named-in-mdc)
+  * [Excluding properties from serialization](#excluding-properties-from-serialization)
 * [Changes](#changes)
-    * [2.0.0](#200)
-    * [1.0.3](#103)
+  * [2.0.0](#200)
+  * [1.0.3](#103)
 
 ---
 
@@ -170,16 +170,15 @@ log.info("another message without context");
 
 ### Step 4: (Optional) Use the Task Decorator
 
-When you start another thread, MDC will be empty. Usually, you probably want to remain in the same MdcContext,
-though. There's a decorator for your `Runnable` that solves this problem by copying your current MDC contents to the new
-Thread in which your `Runnable` runs and resets it when it's done:
+When you start another thread, MDC will be empty although the things happening there usually happen in the same context.
+
+So if you want to retain the context information in the new thread, there's a decorator for your `Runnable` that solves this problem by copying the current MDC contents to the new Thread in which your `Runnable` runs and resets it when it's done:
 
 ```java
-Runnable decoratedRunnable=MdcTaskDecorator.decorate(()->doSomethingThatLogs());
+Runnable decoratedRunnable = MdcTaskDecorator.decorate(() -> doSomethingThatLogs());
 ```
 
-If you use Spring and start the other thread by calling an `@Async` method, this can be solved by making Spring use
-the `SpringMdcTaskDecorator` for that. You just need to configure an Executor:
+If you use Spring and start the other thread by calling an `@Async` method, use the `SpringMdcTaskDecorator` for decorating the threads. You just need to configure an Executor:
 
 ```java
 
@@ -203,7 +202,7 @@ If you already configured Executors for other reasons, just add `.setTaskDecorat
 
 ### Step 5: (also Optional) Test your logging
 
-If you use use your logs for monitoring, alerting or visualization, they are a functional requirement and should be
+If you use your logs for monitoring, alerting or visualization, they are a functional requirement and should be
 tested.
 
 The tests for **structured-logging** itself are implemented
@@ -221,13 +220,11 @@ There are three ways to define the MDC key for the objects you put into the cont
 **2. Define it manually**
 
 ```java
-try(var c=MdcContext.of("de_lorean",timeMachine)){
-        ...
-
-        timeMachine.setFluxFactor(42);
-
-        MdcContext.update("de_lorean",timeMachine);
-        }
+try(var c = MdcContext.of("de_lorean", timeMachine)){
+    ...
+    MdcContext.update("de_lorean", timeMachine);
+    ...
+}
 ```
 
 **3. Provide an MdcKeySupplier**
@@ -235,26 +232,27 @@ try(var c=MdcContext.of("de_lorean",timeMachine)){
 This is the recommended approach if you want to make sure that the same MDC key is always used for the same type, even
 if it differs from the type's shortName or the type is renamed.
 
+First, define the MDC key for the type:
+
 ```java
 // must be public and have a public, non-parameterized constructor
-public final class TimeMachineKey implements MdcKeySupplier<TimeMachine>
-
-        @Override
-        public String getMdcKey() {
-            return "de_lorean";
-        }
+public final class TimeMachineKey implements MdcKeySupplier<TimeMachine> {
+    @Override
+    public String getMdcKey() {
+        return "de_lorean";
+    }
 }
+```
 
-...
+Then use it:
 
+```java
 //MdcContext.of(...) is defined so that you can only use TimeMachineKey with a TimeMachine.
-        try(var c=MdcContext.of(TimeMachineKey.class,timeMachine)){
-        ...
-
-        timeMachine.setFluxFactor(42);
-
-        MdcContext.update(TimeMachineKey.class,timeMachine);
-        }
+try(var c = MdcContext.of(TimeMachineKey.class, timeMachine)){
+    ...
+    MdcContext.update(TimeMachineKey.class, timeMachine);
+    ...
+}
 ```
 
 ### Excluding properties from serialization
