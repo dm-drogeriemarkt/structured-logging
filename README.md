@@ -29,6 +29,7 @@ its  [MDC](http://logback.qos.ch/manual/mdc.html) to
 * [Changes](#changes)
   * [2.0.0](#200)
   * [1.0.3](#103)
+* [FAQ and Caveats](#faq-and-caveats)
 
 ---
 
@@ -261,11 +262,9 @@ Json serialization is done with Jackson, so you can use the `com.fasterxml.jacks
 exclude fields (or getters) from serialization.
 
 ```java
-    public class TimeMachine {
-        ...
-
+public class TimeMachine {
     @JsonIgnore
-    getIrrelevantProperty() {
+    public getIrrelevantProperty() {
             ...
     }
 }
@@ -276,7 +275,7 @@ exclude fields (or getters) from serialization.
 ### 2.0.0
 
 * New Feature: Added convenience methods for creating MdcContexts without having an MdcKeySupplier.
-* New Feature: MdcContext can now be updated in case the Bean that it describes is updated.
+* New Feature: MdcContext can now be updated
 * New Feature: Runnables can now directly be decorated via `MdcTaskDecorator` to retain MDC information even when not using Spring.
 * Breaking Change: Renamed MdcContextId to MdcKeySupplier to make its purpose clear
 * Fix: Do not create ObjectMapper every time an MdcContext is created.
@@ -292,3 +291,10 @@ exclude fields (or getters) from serialization.
     * OffsetTime (new)
     * Period (new)
     * ZonedDateTime (new)
+
+## FAQ and Caveats
+
+TODO:
+
+* What about the Dependencies? Spring, Lombok, Jackson
+* What to look out for when using ELK/Datadog (types)
