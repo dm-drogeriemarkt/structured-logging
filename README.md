@@ -38,7 +38,7 @@ If there are log messages that happen in the context of an order, you may want t
 these log messages.
 
 ```java
-    try(var c=LoggingContext.of(incomingOrder)){
+    try(var c=MdcContext.of(incomingOrder)){
         log.info("A new order has come in.");
         if(isValid(incomingOrder)){
         prepareForDelivery(incomingOrder);
@@ -147,7 +147,7 @@ The following configuration can be used as an example:
 
 ### Step 3: Put Objects into the logging context
 
-Create a new `LoggingContext` in a try-with-resources statement to define the scope in which context information should
+Create a new `MdcContext` in a try-with-resources statement to define the scope in which context information should
 be set:
 
 ```java
@@ -155,14 +155,14 @@ log.info("a message without context");
 
         TimeMachine timeMachine=TimeMachineBuilder.build();
 
-        try(var c=LoggingContext.of(timeMachine)){
+        try(var c=MdcContext.of(timeMachine)){
         log.info("time machine found. Trying to use it");
 
         travelSomewhereWith(timeMachine);
 
         timeMachine.setFluxFactor(42);
 
-        LoggingContext.update(timeMachine);
+        MdcContext.update(timeMachine);
 
         travelSomewhereWith(timeMachine);
         }
@@ -179,7 +179,7 @@ log.info("a message without context");
 
 ### Step 4: (Optional) Use the Task Decorator
 
-When you start another thread, MDC will be empty. Usually, you probably want to remain in the same LoggingContext,
+When you start another thread, MDC will be empty. Usually, you probably want to remain in the same MdcContext,
 though. There's a decorator for your `Runnable` that solves this problem by copying your current MDC contents to the new
 Thread in which your `Runnable` runs and resets it when it's done:
 
@@ -230,12 +230,12 @@ There are three ways to define the MDC key for the objects you put into the cont
 **2. Define it manually**
 
 ```java
-try(var c=LoggingContext.of("de_lorean",timeMachine)){
+try(var c=MdcContext.of("de_lorean",timeMachine)){
         ...
 
         timeMachine.setFluxFactor(42);
 
-        LoggingContext.update("de_lorean",timeMachine);
+        MdcContext.update("de_lorean",timeMachine);
         }
 ```
 
@@ -256,13 +256,13 @@ public final class TimeMachineKey implements MdcKeySupplier<TimeMachine>
 
 ...
 
-//LoggingContext.of(...) is defined so that you can only use TimeMachineKey with a TimeMachine.
-        try(var c=LoggingContext.of(TimeMachineKey.class,timeMachine)){
+//MdcContext.of(...) is defined so that you can only use TimeMachineKey with a TimeMachine.
+        try(var c=MdcContext.of(TimeMachineKey.class,timeMachine)){
         ...
 
         timeMachine.setFluxFactor(42);
 
-        LoggingContext.update(TimeMachineKey.class,timeMachine);
+        MdcContext.update(TimeMachineKey.class,timeMachine);
         }
 ```
 
