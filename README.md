@@ -40,12 +40,14 @@ these log messages.
 ```java
     try(var c=MdcContext.of(incomingOrder)){
         log.info("A new order has come in.");
+        
         if(isValid(incomingOrder)){
-        prepareForDelivery(incomingOrder);
+            prepareForDelivery(incomingOrder);
         }
+        
         // if isValid() and prepareForDelivery() log something, 
         // those log messages will also have the context of that order
-        }
+    }
 ```
 
 Used like this, the `incomingOrder` will be attached to the log message generated in this `try` block, including
