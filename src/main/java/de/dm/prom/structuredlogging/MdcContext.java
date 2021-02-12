@@ -102,6 +102,8 @@ public final class MdcContext implements java.io.Closeable {
      * update an existing MDC context
      * <p>
      * use this to update an MDC context ensuring that the same key is always used for a certain type
+     * <p>
+     * will log a WARNing instead if no matching MDC contents are present
      *
      * @param keySupplier {@link MdcKeySupplier} implementation to describe which MDC key to use
      * @param mdcValue the object to write to MDC
@@ -123,6 +125,8 @@ public final class MdcContext implements java.io.Closeable {
      * <p>
      * use this to update an MDC context with a manually defined key
      * <p>
+     * will log a WARNing instead if no matching MDC contents are present
+     * <p>
      * See {@link MdcContext#of(Class, Object)} if you want to ensure that the same key is always used for a certain type
      *
      * @param mdcKey MDC key to use
@@ -136,6 +140,8 @@ public final class MdcContext implements java.io.Closeable {
      * update an existing MDC context
      * <p>
      * use this to update an MDC context that uses the serialized object's simpleName as the MDC key
+     * <p>
+     * will log a WARNing instead if no matching MDC contents are present
      * <p>
      * See {@link MdcContext#of(Class, Object)} if you want to ensure that the same MDC key is always used for a certain type
      * <p>
