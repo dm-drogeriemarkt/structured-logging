@@ -187,7 +187,6 @@
         <module name="ConstantName">
             <property name="applyToPrivate" value="false"/>
         </module>
-        <module name="AvoidStaticImport"/>
         <module name="RedundantImport"/>
         <module name="UnusedImports"/>
         <module name="AnonInnerLength"/>
