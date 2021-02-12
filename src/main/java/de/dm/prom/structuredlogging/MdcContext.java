@@ -23,7 +23,7 @@ import java.time.ZonedDateTime;
  * see the documentation for an example
  */
 @Slf4j
-public final class LoggingContext implements java.io.Closeable {
+public final class MdcContext implements java.io.Closeable {
     private final String oldValue; //MDC value outside this context
     private final String key;
 
@@ -54,15 +54,15 @@ public final class LoggingContext implements java.io.Closeable {
      *
      * @return an MDC context to use in a try-with-resources block
      */
-    public static <T, S extends MdcKeySupplier<T>> LoggingContext of(Class<S> keySupplier, T mdcValue) {
+    public static <T, S extends MdcKeySupplier<T>> MdcContext of(Class<S> keySupplier, T mdcValue) {
         try {
             MdcKeySupplier<T> id = keySupplier.getDeclaredConstructor().newInstance();
-            return new LoggingContext(id.getMdcKey(), mdcValue);
+            return new MdcContext(id.getMdcKey(), mdcValue);
         } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
             log.error("Cannot put key of type {} to MDC because no new instance of {} can be created: {}",
                     mdcValue.getClass().getSimpleName(), keySupplier.getSimpleName(), e.getMessage());
         }
-        return new LoggingContext(mdcValue.getClass().getSimpleName(), mdcValue);
+        return new MdcContext(mdcValue.getClass().getSimpleName(), mdcValue);
     }
 
     /**
@@ -70,15 +70,15 @@ public final class LoggingContext implements java.io.Closeable {
      * <p>
      * use this to construct an MDC context with a manually defined key
      * <p>
-     * See {@link LoggingContext#of(Class, Object)} if you want to ensure that the same key is always used for a certain type
+     * See {@link MdcContext#of(Class, Object)} if you want to ensure that the same key is always used for a certain type
      *
      * @param mdcKey MDC key to use
      * @param mdcValue the object to write to MDC
      *
      * @return an MDC context to use in a try-with-resources block
      */
-    public static LoggingContext of(String mdcKey, Object mdcValue) {
-        return new LoggingContext(mdcKey, mdcValue);
+    public static MdcContext of(String mdcKey, Object mdcValue) {
+        return new MdcContext(mdcKey, mdcValue);
     }
 
     /**
@@ -86,16 +86,16 @@ public final class LoggingContext implements java.io.Closeable {
      * <p>
      * use this to construct an MDC context that uses the serialized object's simpleName as the MDC key
      * <p>
-     * See {@link LoggingContext#of(Class, Object)} if you want to ensure that the same MDC key is always used for a certain type
+     * See {@link MdcContext#of(Class, Object)} if you want to ensure that the same MDC key is always used for a certain type
      * <p>
-     * See {@link LoggingContext#of(String, Object)} if you want to manually define the MDC key
+     * See {@link MdcContext#of(String, Object)} if you want to manually define the MDC key
      *
      * @param mdcValue the object to write to MDC
      *
      * @return an MDC context to use in a try-with-resources block
      */
-    public static LoggingContext of(Object mdcValue) {
-        return new LoggingContext(mdcValue.getClass().getSimpleName(), mdcValue);
+    public static MdcContext of(Object mdcValue) {
+        return new MdcContext(mdcValue.getClass().getSimpleName(), mdcValue);
     }
 
     /**
@@ -123,7 +123,7 @@ public final class LoggingContext implements java.io.Closeable {
      * <p>
      * use this to update an MDC context with a manually defined key
      * <p>
-     * See {@link LoggingContext#of(Class, Object)} if you want to ensure that the same key is always used for a certain type
+     * See {@link MdcContext#of(Class, Object)} if you want to ensure that the same key is always used for a certain type
      *
      * @param mdcKey MDC key to use
      * @param mdcValue the object to write to MDC
@@ -137,9 +137,9 @@ public final class LoggingContext implements java.io.Closeable {
      * <p>
      * use this to update an MDC context that uses the serialized object's simpleName as the MDC key
      * <p>
-     * See {@link LoggingContext#of(Class, Object)} if you want to ensure that the same MDC key is always used for a certain type
+     * See {@link MdcContext#of(Class, Object)} if you want to ensure that the same MDC key is always used for a certain type
      * <p>
-     * See {@link LoggingContext#of(String, Object)} if you want to manually define the MDC key
+     * See {@link MdcContext#of(String, Object)} if you want to manually define the MDC key
      *
      * @param mdcValue the object to write to MDC
      */
@@ -147,7 +147,7 @@ public final class LoggingContext implements java.io.Closeable {
         updateMdcContent(mdcValue.getClass().getSimpleName(), toJson(mdcValue));
     }
 
-    private LoggingContext(String key, Object value) {
+    private MdcContext(String key, Object value) {
         this.key = key;
         oldValue = putToMDCwithOverwriteWarning(key, toJson(value));
     }

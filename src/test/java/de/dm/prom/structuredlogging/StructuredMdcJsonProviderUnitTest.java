@@ -62,7 +62,7 @@ class StructuredMdcJsonProviderUnitTest {
 
     @Test
     void logTest(CapturedOutput output) throws IOException {
-        try (LoggingContext c = LoggingContext.of(ExampleBeanKeySupplier.class, ExampleBean.getExample())) {
+        try (MdcContext c = MdcContext.of(ExampleBeanKeySupplier.class, ExampleBean.getExample())) {
             MDC.put("an_unmanaged_mdc_field", "some value");
             log.info("something in which the ExampleBean context is relevant");
 
