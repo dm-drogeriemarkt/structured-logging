@@ -38,24 +38,22 @@ If there are log messages that happen in the context of an order, you may want t
 these log messages.
 
 ```java
-    try(var c=MdcContext.of(incomingOrder)){
+    try(var c = MdcContext.of(incomingOrder)){
         log.info("A new order has come in.");
         
         if(isValid(incomingOrder)){
             prepareForDelivery(incomingOrder);
         }
-        
-        // if isValid() and prepareForDelivery() log something, 
-        // those log messages will also have the context of that order
     }
 ```
 
-Used like this, the `incomingOrder` will be attached to the log message generated in this `try` block, including
+The `incomingOrder` will be attached to the log messages generated in this `try` block, including
 
 * the message from `log.info("A new order has come in.")` .
-* all messages logged by `prepareForDelivery(...)` and the methods called by that method
+* all messages logged by `prepareForDelivery(...)`, `isValid(...)`
+* all messages logged by methods called indirectly by the methods above
 
-Here's how this would look in Kibana:
+Here's what a log message with an `incomingOrder` looks like in Kibana:
 
 ![Kibana-Example](docs/structured-logging-kibana.png)
 
@@ -68,11 +66,10 @@ using [MDC](http://logback.qos.ch/manual/mdc.html) directly.
 
 * If you log context information, you can easily trace the order from the example above by filtering
   by `incomingOrder.id : 1234`
-* Search becomes easier if die log message itself does not vary that much (just search
+* Searching is easier if the log message itself does not vary that much (just search
   for `message : "A new order has come in."`)
 * Because the type of fields can be inferred, you can for example search by `incomingOrder.paymentDate > 2020-01-01`
-* Everything that is relevant in the context of the log message is attached to it, even if you didn't think of it when
-  writing that specific log message.
+* You don't have to remember to attach context information to every log message: Context information is attached automatically while the context is active.
 * You can do alerting and monitoring based on specific MDC values. Want to know the summary monetary value of
   those `incomingOrder`s in the example above? You can now do that.
 
