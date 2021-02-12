@@ -211,7 +211,6 @@
         <module name="SimplifyBooleanReturn"/>
         <module name="StringLiteralEquality"/>
         <module name="FinalClass"/>
-        <module name="HideUtilityClassConstructor"/>
         <module name="CyclomaticComplexity">
             <property name="switchBlockAsSingleDecisionPoint" value="true"/>
         </module>
