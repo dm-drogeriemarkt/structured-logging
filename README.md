@@ -96,8 +96,12 @@ For creating logs:
 
 For consuming logs:
 
-* Works with log consumers that can digest JSON logs, like the **ELK Stack** or **Datadog**. The consumer needs to
-  support hierarchical data in a log message. **Greylog does not** support this at the moment, for example.
+* Works with log consumers that
+  * can digest JSON logs
+  * supports hierarchical data in a log messgage
+* For example:
+  * **ELK Stack** or **Datadog** are well-supported
+  * **Greylog** can consume JSON logs, but does not support hierarchical data
 
 ## Getting Started
 
@@ -116,7 +120,7 @@ If you use maven, add this to your pom.xml:
 
 ### Step 2: Configure Logback
 
-To log the whole log message including the object you put into MDC as Json, you need to configure Logback to use the **LogstashEncoder** and **StructuredMdcJsonProvider**.
+To log the whole log message including the object you put into MDC as JSON, you need to configure Logback to use the **LogstashEncoder** and **StructuredMdcJsonProvider**.
 
 The following configuration can be used as an example:
 
@@ -258,7 +262,7 @@ try(var c = MdcContext.of(TimeMachineKey.class, timeMachine)){
 
 ### Excluding properties from serialization
 
-Json serialization is done with Jackson, so you can use the `com.fasterxml.jackson.annotation.JsonIgnore` annotation to
+JSON serialization is done with Jackson, so you can use the `com.fasterxml.jackson.annotation.JsonIgnore` annotation to
 exclude fields (or getters) from serialization.
 
 ```java
