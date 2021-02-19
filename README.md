@@ -276,6 +276,10 @@ public class TimeMachine {
 
 ## Changes
 
+### 2.0.1
+
+* Added proper serialization for missing JSR310 type **LocalTime**
+
 ### 2.0.0
 
 * **Breaking Changes**
