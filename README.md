@@ -278,12 +278,18 @@ public class TimeMachine {
 
 ### 2.0.0
 
-* New Feature: Added convenience methods for creating MdcContexts without having an MdcKeySupplier.
-* New Feature: MdcContext can now be updated
-* New Feature: Runnables can now directly be decorated via `MdcTaskDecorator` to retain MDC information even when not using Spring.
-* Breaking Change: Renamed MdcContextId to MdcKeySupplier to make its purpose clear
-* Fix: Do not create ObjectMapper every time an MdcContext is created.
-* Fix: Do not overwrite MDC information in threads that already have a context in MdcTaskDecorator - a WARNing is logged instead because this indicates incorrect usage
+* **Breaking Changes**
+  * Renamed MdcContextId to MdcKeySupplier to make its purpose clear
+    * **migration**: change your code references from `MdcContextId` to `MdcKeySupplier`
+  * Removed generic type information from MdcContext because it is not necessary anymore
+    * **migration**: Change every use of `MdcContext<Foo, Bar>` to only `MdcContext`
+* **New Features**
+  * Added convenience methods for creating MdcContexts without having an MdcKeySupplier.
+  * MdcContext can now be updated
+  * Runnables can now directly be decorated via `MdcTaskDecorator` to retain MDC information even when not using Spring.
+* **Fixes**
+  * Do not create ObjectMapper every time an MdcContext is created.
+  * Do not overwrite MDC information in threads that already have a context in MdcTaskDecorator - a WARNing is logged instead because this indicates incorrect usage
 
 ### 1.0.3
 
