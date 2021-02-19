@@ -7,5 +7,9 @@ import org.springframework.core.task.TaskDecorator;
  * <p>
  * see the documentation on how to use this
  */
-public class SpringMdcTaskDecorator extends MdcTaskDecorator implements TaskDecorator {
+public class SpringMdcTaskDecorator implements TaskDecorator {
+    @Override
+    public Runnable decorate(Runnable runnable) {
+        return MdcTaskDecorator.decorate(runnable);
+    }
 }

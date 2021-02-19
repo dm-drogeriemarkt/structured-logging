@@ -1,9 +1,12 @@
 package de.dm.prom.structuredlogging;
 
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 
 import java.util.Map;
+
+import static lombok.AccessLevel.PRIVATE;
 
 /**
  * generic task decorator inspired by Spring's task decorator - to be used in other frameworks
@@ -13,6 +16,7 @@ import java.util.Map;
  * see the documentation on how to use this
  */
 @Slf4j
+@NoArgsConstructor(access = PRIVATE)
 public class MdcTaskDecorator {
     /**
      * use this do decorate a runnable intended to run in a separate thread - it will be decorated so that the main
@@ -26,7 +30,7 @@ public class MdcTaskDecorator {
      *
      * @return the decorated runnable
      */
-    public Runnable decorate(Runnable runnable) {
+    public static Runnable decorate(Runnable runnable) {
         Map<String, String> contextMap = MDC.getCopyOfContextMap();
         return () -> {
             boolean contextWasSet = false;
@@ -50,7 +54,7 @@ public class MdcTaskDecorator {
         };
     }
 
-    private boolean hasContent(Map<String, String> contextMap) {
+    private static boolean hasContent(Map<String, String> contextMap) {
         return contextMap != null && !contextMap.isEmpty();
     }
 }

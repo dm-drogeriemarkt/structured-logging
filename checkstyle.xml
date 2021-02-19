@@ -187,7 +187,6 @@
         <module name="ConstantName">
             <property name="applyToPrivate" value="false"/>
         </module>
-        <module name="AvoidStaticImport"/>
         <module name="RedundantImport"/>
         <module name="UnusedImports"/>
         <module name="AnonInnerLength"/>
@@ -211,7 +210,6 @@
         <module name="SimplifyBooleanReturn"/>
         <module name="StringLiteralEquality"/>
         <module name="FinalClass"/>
-        <module name="HideUtilityClassConstructor"/>
         <module name="CyclomaticComplexity">
             <property name="switchBlockAsSingleDecisionPoint" value="true"/>
         </module>
