@@ -27,6 +27,7 @@ class ExampleBean {
     private OffsetTime offsetTime;
     private Period period;
     private ZonedDateTime zonedDateTime;
+    private LocalTime localTime;
 
     static ExampleBean getExample() {
         LocalDateTime importantTime = LocalDateTime.of(2019, Month.JANUARY, 1, 13, 37);
@@ -41,6 +42,7 @@ class ExampleBean {
                 .offsetTime(OffsetTime.of(LocalTime.of(13, 37), ZoneOffset.of("+01:00")))
                 .period(Period.ofDays(42))
                 .zonedDateTime(ZonedDateTime.of(importantTime, ZoneId.of("UTC")))
+                .localTime(LocalTime.of(13, 37))
                 .build();
     }
 }

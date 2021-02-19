@@ -42,6 +42,7 @@ class StructuredMdcJsonProviderUnitTest {
             "\"localDate\":\"2020-01-01\"," +
             "\"offsetTime\":\"13:37+01:00\"," +
             "\"period\":\"P42D\"," +
+            "\"localTime\":\"13:37\"," +
             "\"zonedDateTime\":\"2019-01-01T13:37Z[UTC]\"}}";
 
     private Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);

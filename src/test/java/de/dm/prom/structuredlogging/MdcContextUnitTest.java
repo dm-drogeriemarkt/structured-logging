@@ -26,7 +26,9 @@ class MdcContextUnitTest {
             "\"localDate\":\"2020-01-01\"," +
             "\"offsetTime\":\"13:37+01:00\"," +
             "\"period\":\"P42D\"," +
-            "\"zonedDateTime\":\"2019-01-01T13:37Z[UTC]\"}";
+            "\"zonedDateTime\":\"2019-01-01T13:37Z[UTC]\"," +
+            "\"localTime\":\"13:37\"" +
+            "}";
 
     @RegisterExtension
     public LogCapture logCapture = LogCapture.forCurrentPackage();
