@@ -91,8 +91,8 @@ For creating logs:
 
 * You need to use **SLF4J** as your logging facade.
 * You need to use **logback** as your logging implementation.
-* **Optionally**, you can use **Spring (Boot)** which uses both of these per default and already lets you register Task
-  Decorators. But other frameworks (or no framework) work just as well.
+* **Optionally**, you can use **Spring** which uses both of these per default and already lets you register Task
+  Decorators. This library [does not depend on Spring](#faq-and-caveats), however. Other frameworks (or no framework at all) work just as well. 
 
 For consuming logs:
 
@@ -298,7 +298,28 @@ public class TimeMachine {
 
 ## FAQ and Caveats
 
-TODO:
+**Your dependencies include Spring and Lombok. What can I do if I don't want to use Spring and Lombok?**
 
-* What about the Dependencies? Spring, Lombok, Jackson
-* What to look out for when using ELK/Datadog (types)
+Actually, **Spring and Lombok are not included** if you just want to use Structured Logging. Spring and Lombok are only needed to build/develop Structured Logging.
+
+So if you add Structured Logging to your dependencies, there are only three dependencies that will be added to your project transitively:
+
+1. **slf4j** which is the logging facade you probably use already
+1. **logback** as a concrete implementation of the slf4j api
+1. **logback-logstash-encoder** needed to write logs as json
+
+**Is there anything to watch out for when logging that many fields?**
+
+You should be careful when changing the type of a field that you put into your context.
+If the indexed type does not match the type that is expected, your log messages may be thrown away. We've seen this happen in ELK.
+
+For example: Your order.id was numeric, now it's alphanumeric, but it's still indexed as a number. In that case, you have two options:
+
+1. contact your ELK admin and tell her about it so she can start re-index
+1. rename the field (either order or id) so that the types don't collide
+
+Note that this also applies if just you use MDC directly. However, with Structured Logging it is more likely to happen because you are usually logging more fields.
+
+**Since I'm logging that much now, I also want to test my logging. How can I do that?**
+
+Actually, no one has asked that so far. We just want to to advertise **[log-capture](https://github.com/dm-drogeriemarkt/log-capture)**, which solves this problem.
