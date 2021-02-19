@@ -27,6 +27,7 @@ its  [MDC](http://logback.qos.ch/manual/mdc.html) to
   * [Define how Objects should be named in MDC](#define-how-objects-should-be-named-in-mdc)
   * [Excluding properties from serialization](#excluding-properties-from-serialization)
 * [Changes](#changes)
+  * [2.0.1](#201)
   * [2.0.0](#200)
   * [1.0.3](#103)
 * [FAQ and Caveats](#faq-and-caveats)
@@ -113,7 +114,7 @@ If you use maven, add this to your pom.xml:
 <dependency>
     <groupId>de.dm.infrastructure</groupId>
     <artifactId>structured-logging</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <scope>test</scope>
 </dependency>
 ```
