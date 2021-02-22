@@ -1,5 +1,6 @@
 package de.dm.prom.structuredlogging;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.task.TaskDecorator;
 
 /**
@@ -7,9 +8,12 @@ import org.springframework.core.task.TaskDecorator;
  * <p>
  * see the documentation on how to use this
  */
+@RequiredArgsConstructor
 public class SpringMdcTaskDecorator implements TaskDecorator {
+    private final OverwriteMode overwriteMode;
+
     @Override
     public Runnable decorate(Runnable runnable) {
-        return MdcTaskDecorator.decorate(runnable);
+        return MdcTaskDecorator.decorate(runnable, overwriteMode);
     }
 }
