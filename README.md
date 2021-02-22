@@ -288,6 +288,8 @@ public class TimeMachine {
     * **migration**: change your code references from `MdcContextId` to `MdcKeySupplier`
   * Removed generic type information from MdcContext because it is not necessary anymore
     * **migration**: Change every use of `MdcContext<Foo, Bar>` to only `MdcContext`
+  * The Task decorator to be used with Spring is now named `SpringMdcTaskDecorator` instead of `MdcTaskDecorator`
+    * **migration**: use `SpringMdcTaskDecorator` when creating your Executor bean
 * **New Features**
   * Added convenience methods for creating MdcContexts without having an MdcKeySupplier.
   * MdcContext can now be updated
