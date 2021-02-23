@@ -114,7 +114,7 @@ If you use maven, add this to your pom.xml:
 <dependency>
     <groupId>de.dm.infrastructure</groupId>
     <artifactId>structured-logging</artifactId>
-    <version>2.0.1</version>
+    <version>2.0.2</version>
     <scope>test</scope>
 </dependency>
 ```
