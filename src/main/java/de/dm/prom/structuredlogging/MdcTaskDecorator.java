@@ -29,11 +29,11 @@ public class MdcTaskDecorator {
      * will log a WARNing and not copy the MDC context if the other thread already has content in its MDC context.
      *
      * @param runnable runnable to run
-     * @param overwriteMode
+     * @param overwriteStrategy strategy to use when encountering MDC content in decorated threads
      *
      * @return the decorated runnable
      */
-    public static Runnable decorate(Runnable runnable, OverwriteMode overwriteMode) {
+    public static Runnable decorate(Runnable runnable, OverwriteStrategy overwriteStrategy) {
         Map<String, String> contextMap = MDC.getCopyOfContextMap();
         return () -> {
             boolean contextWasSet = false;
@@ -41,23 +41,23 @@ public class MdcTaskDecorator {
             try {
                 if (getKeys(contextMap).isPresent()) {
                     Optional<Set<String>> presentKeys = getKeys(threadsContextMap);
-                    if (overwriteMode != OverwriteMode.PREVENT_OVERWRITE || !presentKeys.isPresent()) {
+                    if (overwriteStrategy != OverwriteStrategy.PREVENT_OVERWRITE || !presentKeys.isPresent()) {
                         MDC.setContextMap(contextMap);
                         contextWasSet = true;
 
-                        if (overwriteMode == OverwriteMode.LOG_OVERWRITE) {
-                            log.warn("MDC context was set despite MDC keys being present in target thread. MDC keys present: {}", presentKeys.get()); //TODO: output the line that causes this
+                        if (overwriteStrategy == OverwriteStrategy.LOG_OVERWRITE) {
+                            log.warn("MDC context was set despite MDC keys being present in target thread. MDC keys present: {}", presentKeys.get());
                         }
 
                         log.debug("MDC context set for runnable."); //hopefully this helps when reading logs in the future
                     } else {
-                        log.warn("MDC context was not set for runnable because it was run in a thread that already had a context. MDC keys present: {}", presentKeys.get()); //TODO: output the line that causes this
+                        log.warn("MDC context was not set for runnable because it was run in a thread that already had a context. MDC keys present: {}", presentKeys.get());
                     }
                 }
                 runnable.run();
             } finally {
                 if (contextWasSet) {
-                    MDC.setContextMap(threadsContextMap); //TODO: test that this is properly reset
+                    MDC.setContextMap(threadsContextMap);
                 }
             }
         };

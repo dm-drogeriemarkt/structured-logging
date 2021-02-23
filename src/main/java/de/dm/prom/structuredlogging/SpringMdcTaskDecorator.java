@@ -1,6 +1,5 @@
 package de.dm.prom.structuredlogging;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.core.task.TaskDecorator;
 
 /**
@@ -8,12 +7,20 @@ import org.springframework.core.task.TaskDecorator;
  * <p>
  * see the documentation on how to use this
  */
-@RequiredArgsConstructor
 public class SpringMdcTaskDecorator implements TaskDecorator {
-    private final OverwriteMode overwriteMode;
+    private final OverwriteStrategy overwriteStrategy;
+
+    /**
+     * Creates a new SpringMdcTaskDecorator defining the stragety to use
+     *
+     * @param overwriteStrategy strategy to use when encountering MDC content in decorated threads
+     */
+    public SpringMdcTaskDecorator(OverwriteStrategy overwriteStrategy) {
+        this.overwriteStrategy = overwriteStrategy;
+    }
 
     @Override
     public Runnable decorate(Runnable runnable) {
-        return MdcTaskDecorator.decorate(runnable, overwriteMode);
+        return MdcTaskDecorator.decorate(runnable, overwriteStrategy);
     }
 }
