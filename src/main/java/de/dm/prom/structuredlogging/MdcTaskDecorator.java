@@ -4,6 +4,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -34,38 +35,46 @@ public class MdcTaskDecorator {
      * @return the decorated runnable
      */
     public static Runnable decorate(Runnable runnable, OverwriteStrategy overwriteStrategy) {
-        Map<String, String> contextMap = MDC.getCopyOfContextMap();
+        Optional<Map<String, String>> parentContext = Optional.ofNullable(MDC.getCopyOfContextMap());
         return () -> {
             boolean contextWasSet = false;
-            Map<String, String> threadsContextMap = MDC.getCopyOfContextMap();
+            Optional<Map<String, String>> childContext = Optional.ofNullable(MDC.getCopyOfContextMap());
             try {
-                if (getKeys(contextMap).isPresent()) {
-                    Optional<Set<String>> presentKeys = getKeys(threadsContextMap);
-                    if (overwriteStrategy != OverwriteStrategy.PREVENT_OVERWRITE || !presentKeys.isPresent()) {
-                        if (overwriteStrategy == OverwriteStrategy.LOG_OVERWRITE && presentKeys.isPresent()) {
-                            log.warn("MDC context will be set despite MDC keys being present in target thread. MDC keys present: {}", presentKeys.get());
-                        }
-
-                        MDC.setContextMap(contextMap);
+                if (parentContext.isPresent()) {
+                    Set<String> childKeys = getKeys(childContext);
+                    if (overwriteStrategy != OverwriteStrategy.PREVENT_OVERWRITE || childKeys.isEmpty()) {
+                        setContextInThread(overwriteStrategy, parentContext.get(), childKeys);
                         contextWasSet = true;
-                        log.debug("MDC context set for runnable."); //hopefully this helps when reading logs in the future
                     } else {
-                        log.warn("MDC context was not set for runnable because it was run in a thread that already had a context. MDC keys present: {}", presentKeys.get());
+                        log.warn("MDC context was not set for runnable because it was run in a thread that already had a context. MDC keys present: {}", childKeys);
                     }
                 }
                 runnable.run();
             } finally {
                 if (contextWasSet) {
-                    MDC.setContextMap(threadsContextMap);
+                    if (childContext.isPresent()) {
+                        MDC.setContextMap(childContext.get());
+                    } else {
+                        MDC.clear();
+                    }
                 }
             }
         };
     }
 
-    private static Optional<Set<String>> getKeys(Map<String, String> contextMap) {
-        if (contextMap != null && !contextMap.isEmpty()) {
-            return Optional.of(contextMap.keySet());
+    private static void setContextInThread(OverwriteStrategy overwriteStrategy, Map<String, String> contextMap, Set<String> presentKeys) {
+        if (overwriteStrategy == OverwriteStrategy.LOG_OVERWRITE && !presentKeys.isEmpty()) {
+            log.warn("MDC context will be set despite MDC keys being present in target thread. MDC keys present: {}", presentKeys);
         }
-        return Optional.empty();
+
+        MDC.setContextMap(contextMap);
+        log.debug("MDC context set for runnable."); //hopefully this helps when reading logs in the future
+    }
+
+    private static Set<String> getKeys(Optional<Map<String, String>> contextMap) {
+        if (contextMap.isPresent() && !contextMap.get().isEmpty()) {
+            return contextMap.get().keySet();
+        }
+        return Collections.emptySet();
     }
 }
