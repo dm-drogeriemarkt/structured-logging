@@ -8,8 +8,19 @@ import org.springframework.core.task.TaskDecorator;
  * see the documentation on how to use this
  */
 public class SpringMdcTaskDecorator implements TaskDecorator {
+    private final OverwriteStrategy overwriteStrategy;
+
+    /**
+     * Creates a new SpringMdcTaskDecorator defining the stragety to use
+     *
+     * @param overwriteStrategy strategy to use when encountering MDC content in decorated threads
+     */
+    public SpringMdcTaskDecorator(OverwriteStrategy overwriteStrategy) {
+        this.overwriteStrategy = overwriteStrategy;
+    }
+
     @Override
     public Runnable decorate(Runnable runnable) {
-        return MdcTaskDecorator.decorate(runnable);
+        return MdcTaskDecorator.decorate(runnable, overwriteStrategy);
     }
 }
