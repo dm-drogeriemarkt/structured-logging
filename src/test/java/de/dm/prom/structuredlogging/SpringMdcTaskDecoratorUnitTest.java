@@ -150,9 +150,39 @@ class SpringMdcTaskDecoratorUnitTest {
 
         Assertions.assertThat(MDC.get("testKey")).isEqualTo("testValue"); //value should still be set in main thread
 
-        logCapture.assertLogged(WARN, "^MDC context was set despite MDC keys being present in target thread. MDC keys present: \\[existing_key\\]$")
+        logCapture.assertLogged(WARN, "^MDC context will be set despite MDC keys being present in target thread. MDC keys present: \\[existing_key\\]$")
                 .thenLogged(DEBUG, "^MDC context set for runnable.$")
-                .thenLogged(WARN, "^MDC context was set despite MDC keys being present in target thread. MDC keys present: \\[existing_key\\]$")
+                .thenLogged(WARN, "^MDC context will be set despite MDC keys being present in target thread. MDC keys present: \\[existing_key\\]$")
+                .thenLogged(DEBUG, "^MDC context set for runnable.$");
+    }
+
+    @Test
+    @DisplayName("only debug is logged with LOG_OVERWRITE when no context is set in decorated thread")
+    void logOverwriteLogsNothingWhenEmpty() throws Throwable {
+        SpringMdcTaskDecorator mdcTaskDecorator = new SpringMdcTaskDecorator(OverwriteStrategy.LOG_OVERWRITE);
+
+        MDC.put("testKey", "testValue");
+
+        Runnable mdcSettingRunnable = () -> MDC.clear();
+
+        Runnable decoratedRunnable = mdcTaskDecorator.decorate(
+                collectingThrowables(() -> {
+                    Assertions.assertThat(MDC.get("existing_key")).isNull();
+                    Assertions.assertThat(MDC.get("testKey")).isEqualTo("testValue");
+                }));
+
+        ThreadPoolExecutor e = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+        e.execute(mdcSettingRunnable);
+        e.execute(decoratedRunnable);
+        e.execute(decoratedRunnable); //intentionally run twice to assert that MDC.clear() has not been called
+        e.shutdown();
+        e.awaitTermination(10, SECONDS);
+
+        throwThrowablesFromThread();
+
+        Assertions.assertThat(MDC.get("testKey")).isEqualTo("testValue"); //value should still be set in main thread
+
+        logCapture.assertLogged(DEBUG, "^MDC context set for runnable.$")
                 .thenLogged(DEBUG, "^MDC context set for runnable.$");
     }
 

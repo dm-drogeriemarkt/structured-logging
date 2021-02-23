@@ -42,13 +42,12 @@ public class MdcTaskDecorator {
                 if (getKeys(contextMap).isPresent()) {
                     Optional<Set<String>> presentKeys = getKeys(threadsContextMap);
                     if (overwriteStrategy != OverwriteStrategy.PREVENT_OVERWRITE || !presentKeys.isPresent()) {
-                        MDC.setContextMap(contextMap);
-                        contextWasSet = true;
-
-                        if (overwriteStrategy == OverwriteStrategy.LOG_OVERWRITE) {
-                            log.warn("MDC context was set despite MDC keys being present in target thread. MDC keys present: {}", presentKeys.get());
+                        if (overwriteStrategy == OverwriteStrategy.LOG_OVERWRITE && presentKeys.isPresent()) {
+                            log.warn("MDC context will be set despite MDC keys being present in target thread. MDC keys present: {}", presentKeys.get());
                         }
 
+                        MDC.setContextMap(contextMap);
+                        contextWasSet = true;
                         log.debug("MDC context set for runnable."); //hopefully this helps when reading logs in the future
                     } else {
                         log.warn("MDC context was not set for runnable because it was run in a thread that already had a context. MDC keys present: {}", presentKeys.get());

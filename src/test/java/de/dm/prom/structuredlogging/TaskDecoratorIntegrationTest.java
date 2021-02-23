@@ -42,9 +42,34 @@ class TaskDecoratorIntegrationTest {
 
 
         logCapture.assertLogged(INFO, "^message 1$", withMdc("ExampleBean", "John Doe"))
-                .thenLogged(WARN, "MDC context was set despite MDC keys being present in target thread. MDC keys present: \\[existing_key\\]")
+                .thenLogged(WARN, "MDC context will be set despite MDC keys being present in target thread. MDC keys present: \\[existing_key\\]")
                 .thenLogged(INFO, "^message from decorated runnable", withMdc("ExampleBean", "John Doe"))
                 .thenLogged(INFO, "^message from un-decorated runnable", withMdc("existing_key", "existing_content"));
+    }
+
+    @Test
+    void assertMdcWithDecoratedThreadsEmptyContext() throws InterruptedException {
+        SpringMdcTaskDecorator mdcTaskDecorator = new SpringMdcTaskDecorator(OverwriteStrategy.LOG_OVERWRITE);
+
+        Runnable mdcSettingRunnable = () -> MDC.clear();
+
+        try (MdcContext c = MdcContext.of(ExampleBean.getExample())) {
+            log.info("message 1");
+
+            Runnable decoratedRunnable = mdcTaskDecorator.decorate(() -> log.info("message from decorated runnable"));
+
+            Runnable undecoratedRunnable = () -> log.info("message from un-decorated runnable");
+
+            ThreadPoolExecutor e = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+            e.execute(mdcSettingRunnable);
+            e.execute(decoratedRunnable);
+            e.shutdown();
+            e.awaitTermination(10, SECONDS);
+        }
+
+
+        logCapture.assertLogged(INFO, "^message 1$", withMdc("ExampleBean", "John Doe"))
+                .thenLogged(INFO, "^message from decorated runnable", withMdc("ExampleBean", "John Doe"));
     }
 
     @Test
