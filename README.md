@@ -27,6 +27,8 @@ its  [MDC](http://logback.qos.ch/manual/mdc.html) to
   * [Define how Objects should be named in MDC](#define-how-objects-should-be-named-in-mdc)
   * [Excluding properties from serialization](#excluding-properties-from-serialization)
 * [Changes](#changes)
+  * [2.0.3](#203)
+  * [2.0.2](#202)
   * [2.0.1](#201)
   * [2.0.0](#200)
   * [1.0.3](#103)
@@ -114,7 +116,7 @@ If you use maven, add this to your pom.xml:
 <dependency>
     <groupId>de.dm.infrastructure</groupId>
     <artifactId>structured-logging</artifactId>
-    <version>2.0.2</version>
+    <version>2.0.3</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -181,7 +183,10 @@ When you start another thread, MDC will be empty although the things happening t
 So if you want to retain the context information in the new thread, there's a decorator for your `Runnable` that solves this problem by copying the current MDC contents to the new Thread in which your `Runnable` runs and resets it when it's done:
 
 ```java
-Runnable decoratedRunnable = MdcTaskDecorator.decorate(() -> doSomethingThatLogs());
+Runnable decoratedRunnable = MdcTaskDecorator.decorate(
+    () -> doSomethingThatLogs(), 
+    OverwriteStrategy.LOG_OVERWRITE
+);
 ```
 
 If you use Spring and start the other thread by calling an `@Async` method, use the `SpringMdcTaskDecorator` for decorating the threads. You just need to configure an Executor:
@@ -195,7 +200,7 @@ public class AsyncThreadConfiguration {
     @Bean
     public Executor asyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setTaskDecorator(new SpringMdcTaskDecorator());
+        executor.setTaskDecorator(new SpringMdcTaskDecorator(OverwriteStrategy.LOG_OVERWRITE));
         executor.initialize();
         return executor;
     }
@@ -204,7 +209,14 @@ public class AsyncThreadConfiguration {
 }
 ```
 
-If you already configured Executors for other reasons, just add `.setTaskDecorator(new MdcTaskDecorator())`.
+If you already configured Executors for other reasons, just add `.setTaskDecorator(new MdcTaskDecorator(...))`.
+
+There are three `OverwriteStrategy`s that tell the decorator what to do when it encounters MDC contents in the target thread:
+
+* If you expect MDC content in the target thread, use `JUST_OVERWRITE`.
+* If you don't expect MDC content in the target thread, use `LOG_OVERWRITE` or `PREVENT_OVERWRITE`.
+
+Datadog's APM, for example, does give new threads an MDC context for tracing, so in that case use `JUST_OVERWRITE` so you don't get inappropriate warnings.
 
 ### Step 5: (also Optional) Test your logging
 
@@ -276,6 +288,14 @@ public class TimeMachine {
 ```
 
 ## Changes
+
+### 2.0.3
+
+* **Bugfix**: The Task Decorator threw a NullPointerException when resetting MDC contents if the target thread's MDC was empty
+
+### 2.0.2
+
+* **New Feature**: The [Task Decorator](#step-4-optional-use-the-task-decorator) now allows setting an OverwriteStrategy
 
 ### 2.0.1
 
