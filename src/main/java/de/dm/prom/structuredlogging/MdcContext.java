@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 
 import java.lang.reflect.InvocationTargetException;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,6 +41,7 @@ public final class MdcContext implements java.io.Closeable {
         module.addSerializer(Period.class, new ToStringSerializer());
         module.addSerializer(ZonedDateTime.class, new ToStringSerializer());
         module.addSerializer(LocalTime.class, new ToStringSerializer());
+        module.addSerializer(Duration.class, new ToStringSerializer());
 
         OBJECT_MAPPER.registerModule(module);
     }
