@@ -188,7 +188,7 @@ class SpringMdcTaskDecoratorUnitTest {
 
     @Test
     @DisplayName("decorate decorates and does not log WARN when encountering thread without existing MDC context with JUST_OVERWRITE")
-    void logOverweiteDoesNotLog() throws Throwable {
+    void logOverwriteDoesNotLog() throws Throwable {
         SpringMdcTaskDecorator mdcTaskDecorator = new SpringMdcTaskDecorator(OverwriteStrategy.JUST_OVERWRITE);
 
         MDC.put("testKey", "testValue");
