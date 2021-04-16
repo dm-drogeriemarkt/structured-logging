@@ -13,9 +13,12 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.MonthDay;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.Period;
+import java.time.Year;
+import java.time.YearMonth;
 import java.time.ZonedDateTime;
 
 /**
@@ -42,6 +45,9 @@ public final class MdcContext implements java.io.Closeable {
         module.addSerializer(ZonedDateTime.class, new ToStringSerializer());
         module.addSerializer(LocalTime.class, new ToStringSerializer());
         module.addSerializer(Duration.class, new ToStringSerializer());
+        module.addSerializer(MonthDay.class, new ToStringSerializer());
+        module.addSerializer(Year.class, new ToStringSerializer());
+        module.addSerializer(YearMonth.class, new ToStringSerializer());
 
         OBJECT_MAPPER.registerModule(module);
     }

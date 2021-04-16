@@ -28,7 +28,12 @@ class MdcContextUnitTest {
             "\"period\":\"P42D\"," +
             "\"zonedDateTime\":\"2019-01-01T13:37Z[UTC]\"," +
             "\"localTime\":\"13:37\"," +
-            "\"duration\":\"PT42M\"" +
+            "\"duration\":\"PT42M\"," +
+            "\"dayOfWeek\":\"MONDAY\"," +
+            "\"month\":\"JANUARY\"," +
+            "\"monthDay\":\"--12-24\"," +
+            "\"year\":\"1984\"," +
+            "\"yearMonth\":\"2000-08\"" +
             "}";
 
     @RegisterExtension
@@ -62,9 +67,12 @@ class MdcContextUnitTest {
         JsonNode sampleBeanTree = objectMapper.readTree(expectedJson);
 
         assertThat(jsonStringFromMdc).startsWith(JSON_PREFIX);
-        JsonNode treeFromMDC = objectMapper.readTree(jsonStringFromMdc.replaceFirst(JSON_PREFIX, ""));
+        String actualJson = jsonStringFromMdc.replaceFirst(JSON_PREFIX, "");
+        JsonNode treeFromMDC = objectMapper.readTree(actualJson);
 
-        assertThat(treeFromMDC).isEqualTo(sampleBeanTree);
+        assertThat(treeFromMDC).as("Expecting:\n<%s>\nto be equal to:\n<%s>\nbut was not.\n\n\n",
+                treeFromMDC.toPrettyString(), sampleBeanTree.toPrettyString())
+                .isEqualTo(sampleBeanTree);
     }
 
     @Test
@@ -111,7 +119,7 @@ class MdcContextUnitTest {
     }
 
     @Test
-    void failedUpdate() throws Exception {
+    void failedUpdate() {
         MdcContext.update(ExampleBean.getExample());
 
         logCapture.assertLogged(WARN, "^Cannot update content of MDC key ExampleBean in .*\\.failedUpdate\\(MdcContextUnitTest.java:[0-9]+\\) because it does not exist.$");
