@@ -3,6 +3,7 @@ package de.dm.prom.structuredlogging;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,6 +29,7 @@ class ExampleBean {
     private Period period;
     private ZonedDateTime zonedDateTime;
     private LocalTime localTime;
+    private Duration duration;
 
     static ExampleBean getExample() {
         LocalDateTime importantTime = LocalDateTime.of(2019, Month.JANUARY, 1, 13, 37);
@@ -43,6 +45,7 @@ class ExampleBean {
                 .period(Period.ofDays(42))
                 .zonedDateTime(ZonedDateTime.of(importantTime, ZoneId.of("UTC")))
                 .localTime(LocalTime.of(13, 37))
+                .duration(Duration.ofMinutes(42))
                 .build();
     }
 }

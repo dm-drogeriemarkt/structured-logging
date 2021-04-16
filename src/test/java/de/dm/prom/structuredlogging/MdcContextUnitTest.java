@@ -27,7 +27,8 @@ class MdcContextUnitTest {
             "\"offsetTime\":\"13:37+01:00\"," +
             "\"period\":\"P42D\"," +
             "\"zonedDateTime\":\"2019-01-01T13:37Z[UTC]\"," +
-            "\"localTime\":\"13:37\"" +
+            "\"localTime\":\"13:37\"," +
+            "\"duration\":\"PT42M\"" +
             "}";
 
     @RegisterExtension
