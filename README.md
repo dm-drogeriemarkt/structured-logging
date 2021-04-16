@@ -112,11 +112,11 @@ For consuming logs:
 
 If you use maven, add this to your pom.xml:
 
-```pom.xml
+```xml
 <dependency>
     <groupId>de.dm.infrastructure</groupId>
     <artifactId>structured-logging</artifactId>
-    <version>2.0.3</version>
+    <version>2.0.5</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -288,6 +288,14 @@ public class TimeMachine {
 ```
 
 ## Changes
+
+### 2.0.5
+
+* **New Feature**: Added correct serialization of remaining java.time types (Year, YearMonth and MonthDay)
+
+### 2.0.4
+
+* **New Feature**: Added correct serialization of Duration
 
 ### 2.0.3
 
