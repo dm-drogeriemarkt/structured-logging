@@ -27,6 +27,8 @@ its  [MDC](http://logback.qos.ch/manual/mdc.html) to
   * [Define how Objects should be named in MDC](#define-how-objects-should-be-named-in-mdc)
   * [Excluding properties from serialization](#excluding-properties-from-serialization)
 * [Changes](#changes)
+  * [2.0.5](#205)
+  * [2.0.4](#204)
   * [2.0.3](#203)
   * [2.0.2](#202)
   * [2.0.1](#201)
