@@ -23,7 +23,7 @@ You now can
 
 ![example graphs](docs/example_graphs.png)
 
-all without writing more code, because you already have all information you need in the context of your log message.
+all without writing more code, because you already have all information you need in the context of your log messages.
 
 ---
 
