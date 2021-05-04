@@ -15,7 +15,7 @@ Imagine that ...
 1. you do a `log.info("A new order has come in.");` and automatically get the order object attached to that Message
 1. the order has a `total`, `customerId` and an `id` field
 
-You now can
+Now you can
 
 1. **trace** the order via its `id` and see what log messages it produced.
 1. **alert** based on `customerId` field because the same customer suspiciously placed 50 orders within one day
