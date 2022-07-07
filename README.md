@@ -136,7 +136,6 @@ If you use maven, add this to your pom.xml:
     <groupId>de.dm.infrastructure</groupId>
     <artifactId>structured-logging</artifactId>
     <version>2.0.5</version>
-    <scope>test</scope>
 </dependency>
 ```
 
