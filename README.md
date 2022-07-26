@@ -155,7 +155,7 @@ The following configuration can be used as an example:
         <!-- use LogstashEncoder to log as JSON -->
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <!-- use StructuredMdcJsonProvider to log structured data as json in MDC fields -->
-            <provider class="de.dm.infrastructure.structuredlogging.StructuredMdcJsonProvider"/>
+            <provider class="de.dm.prom.structuredlogging.StructuredMdcJsonProvider"/>
         </encoder>
         <file>${LOG_LOCATION}</file>
     </appender>
