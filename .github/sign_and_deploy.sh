@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 KEY_FILE='daniel.flassak.open.source.private.key'
 
-export GPG_TTY=$(tty) # because GPG likes to behave badly in exotic ways with unhelpful error messages, see https://github.com/keybase/keybase-issues/issues/2798
-
 echo $GPG_KEY_BASE64 | base64 -d  > ${KEY_FILE}
 gpg --passphrase "${GPG_PASSPHRASE}" --batch --yes --fast-import ${KEY_FILE}
 
