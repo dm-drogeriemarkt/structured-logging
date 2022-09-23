@@ -11,7 +11,7 @@ public class SpringMdcTaskDecorator implements TaskDecorator {
     private final OverwriteStrategy overwriteStrategy;
 
     /**
-     * Creates a new SpringMdcTaskDecorator defining the stragety to use
+     * Creates a new SpringMdcTaskDecorator defining the strategy to use
      *
      * @param overwriteStrategy strategy to use when encountering MDC content in decorated threads
      */
