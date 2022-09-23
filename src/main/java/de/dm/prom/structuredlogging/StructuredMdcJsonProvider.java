@@ -19,6 +19,12 @@ public class StructuredMdcJsonProvider extends MdcJsonProvider {
     static final String JSON_PREFIX = "MDC_JSON_VALUE:";
 
     /**
+     * creates this provider according to parent's contract
+     */
+    public StructuredMdcJsonProvider() {
+    }
+
+    /**
      * get the prefix for structured (json) MDC entries. Needed if you need to check MDC contents before they are written
      * into a log - for example for testing
      *
