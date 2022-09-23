@@ -29,6 +29,7 @@ all without writing more code, because you already have all information you need
 
 **Table of Contents**
 
+* [Why?](#why)
 * [Example](#example)
 * [Advantages](#advantages)
   * [Advantages over plain logging](#advantages-over-plain-logging)
@@ -42,8 +43,10 @@ all without writing more code, because you already have all information you need
   * [Step 5: (also Optional) Test your logging](#step-5-also-optional-test-your-logging)
 * [Advanced usage](#advanced-usage)
   * [Define how Objects should be named in MDC](#define-how-objects-should-be-named-in-mdc)
-  * [Excluding properties from serialization](#excluding-properties-from-serialization)
+  * [Changing serialization by using Jackson annotations](#changing-serialization-by-using-jackson-annotations)
+  * [Changing serialization by using a custom ObjectMapper](#changing-serialization-by-using-a-custom-objectmapper)
 * [Changes](#changes)
+  * [2.0.6](#206)
   * [2.0.5](#205)
   * [2.0.4](#204)
   * [2.0.3](#203)
@@ -291,10 +294,10 @@ try(var c = MdcContext.of(TimeMachineKey.class, timeMachine)){
 }
 ```
 
-### Excluding properties from serialization
+### Changing serialization by using Jackson annotations
 
-JSON serialization is done with Jackson, so you can use the `com.fasterxml.jackson.annotation.JsonIgnore` annotation to
-exclude fields (or getters) from serialization.
+JSON serialization is done with Jackson, so you can use the `com.fasterxml.jackson.annotation` annotations to
+fine-tune serialization. Here's an example that excludes a field from serialization:
 
 ```java
 public class TimeMachine {
@@ -305,7 +308,16 @@ public class TimeMachine {
 }
 ```
 
+### Changing serialization by using a custom ObjectMapper
+
+If you want to use your own ObjectMapper for serialization, you can exchange the used default ObjectMapper by calling `setGlobalObjectMapper`. To reset to the default ObjectMapper, you can use `resetGlobalObjectMapper` at any time.
+
 ## Changes
+
+### 2.0.6
+
+* **New Feature**: Made the used ObjectMapper serializable
+* updated dependencies
 
 ### 2.0.5
 

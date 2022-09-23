@@ -6,15 +6,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.dm.infrastructure.logcapture.LogCapture;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.MDC;
 
 import java.io.IOException;
 
+import static ch.qos.logback.classic.Level.ERROR;
 import static ch.qos.logback.classic.Level.WARN;
 import static de.dm.prom.structuredlogging.StructuredMdcJsonProvider.JSON_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Slf4j
 class MdcContextUnitTest {
@@ -39,6 +43,11 @@ class MdcContextUnitTest {
     @RegisterExtension
     public LogCapture logCapture = LogCapture.forCurrentPackage();
 
+    @AfterEach
+    void resetMdc() {
+        MdcContext.resetGlobalObjectMapper();
+    }
+
     @Test
     void createSampleContextWithContextId() throws IOException {
         try (MdcContext c = MdcContext.of(ExampleBeanKeySupplier.class, ExampleBean.getExample())) {
@@ -60,6 +69,47 @@ class MdcContextUnitTest {
         }
     }
 
+    @Test
+    void customObjectMapperIsUsedAndReset() throws IOException {
+        ObjectMapper customObjectMapper = mock(ObjectMapper.class);
+        ExampleBean objectToSerialize = ExampleBean.getExample();
+        String expectedCustomJson = "{\"content\": \"custom json string\"}";
+
+        when(customObjectMapper.writeValueAsString(objectToSerialize)).thenReturn(expectedCustomJson);
+
+        try (MdcContext c = MdcContext.of(objectToSerialize)) {
+            assertMdcFieldContentIsCorrect("ExampleBean", SAMPLE_BEAN_JSON);
+        }
+
+        MdcContext.setGlobalObjectMapper(customObjectMapper);
+
+        try (MdcContext c = MdcContext.of(objectToSerialize)) {
+            assertMdcFieldContentIsCorrect("ExampleBean", expectedCustomJson);
+        }
+
+        MdcContext.resetGlobalObjectMapper();
+
+        try (MdcContext c = MdcContext.of(objectToSerialize)) {
+            assertMdcFieldContentIsCorrect("ExampleBean", SAMPLE_BEAN_JSON);
+        }
+    }
+
+    @Test
+    void exceptionsThrownByObjectMapperAreCaughtAndLogged() throws IOException {
+        ObjectMapper customObjectMapper = mock(ObjectMapper.class);
+        String objectToSerialize = "I have a toString method";
+
+        when(customObjectMapper.writeValueAsString(objectToSerialize)).thenThrow(new RuntimeException("something terrible happened"));
+
+        MdcContext.setGlobalObjectMapper(customObjectMapper);
+        try (MdcContext c = MdcContext.of(objectToSerialize)) {
+            log.info("something happened");
+        }
+
+        logCapture.assertLogged(ERROR, "Object cannot be serialized\\: \"I have a toString method\"");
+        //TODO: aktuelle logCapture-Version verwenden und Exception asserten
+    }
+
     private void assertMdcFieldContentIsCorrect(String mdcFieldName, String expectedJson) throws JsonProcessingException {
         String jsonStringFromMdc = MDC.get(mdcFieldName);
 
@@ -71,7 +121,7 @@ class MdcContextUnitTest {
         JsonNode treeFromMDC = objectMapper.readTree(actualJson);
 
         assertThat(treeFromMDC).as("Expecting:\n<%s>\nto be equal to:\n<%s>\nbut was not.\n\n\n",
-                treeFromMDC.toPrettyString(), sampleBeanTree.toPrettyString())
+                        treeFromMDC.toPrettyString(), sampleBeanTree.toPrettyString())
                 .isEqualTo(sampleBeanTree);
     }
 

@@ -1,6 +1,5 @@
 package de.dm.prom.structuredlogging;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -20,6 +19,7 @@ import java.time.Period;
 import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 /**
  * a context that can be used to wrap MDC information in a try-with-resources block.
@@ -32,7 +32,8 @@ public final class MdcContext implements java.io.Closeable {
     private final String oldValue; //MDC value outside this context
     private final String key;
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper DEFAULT_OBJECT_MAPPER = new ObjectMapper();
+    private static Optional<ObjectMapper> customObjectMapper = Optional.empty();
 
     static {
         SimpleModule module = new SimpleModule();
@@ -49,7 +50,24 @@ public final class MdcContext implements java.io.Closeable {
         module.addSerializer(Year.class, new ToStringSerializer());
         module.addSerializer(YearMonth.class, new ToStringSerializer());
 
-        OBJECT_MAPPER.registerModule(module);
+        DEFAULT_OBJECT_MAPPER.registerModule(module);
+    }
+
+    /**
+     * set a custom object mapper globally for MdcContext.of(...), which means that all subsequent
+     * calls will use this object mapper to serialize the MDC value
+     *
+     * @param objectMapper custom object mapper
+     */
+    public static void setGlobalObjectMapper(ObjectMapper objectMapper) {
+        customObjectMapper = Optional.of(objectMapper);
+    }
+
+    /**
+     * reset the object mapper for MdcContext.of(...) globally to the default
+     */
+    public static void resetGlobalObjectMapper() {
+        customObjectMapper = Optional.empty();
     }
 
     /**
@@ -182,11 +200,15 @@ public final class MdcContext implements java.io.Closeable {
         //needs to be an object, not a string, for Kibana. Otherwise, Kibana will throw away the log entry because the field has the wrong type.
 
         try {
-            objectToJson = OBJECT_MAPPER.writeValueAsString(object);
-        } catch (JsonProcessingException e) {
-            log.error("Object cannot be serialized {}. ({})", object, e);
+            objectToJson = getObjectMapper().writeValueAsString(object);
+        } catch (Exception e) {
+            log.error("Object cannot be serialized: \"{}\"", object, e);
         }
         return objectToJson;
+    }
+
+    private static ObjectMapper getObjectMapper() {
+        return customObjectMapper.orElse(DEFAULT_OBJECT_MAPPER);
     }
 
     private static String putToMDCwithOverwriteWarning(String key, String newValue) {
