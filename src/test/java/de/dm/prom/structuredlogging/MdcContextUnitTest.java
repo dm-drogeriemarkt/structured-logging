@@ -1,6 +1,5 @@
 package de.dm.prom.structuredlogging;
 
-import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,8 +12,9 @@ import org.slf4j.MDC;
 
 import java.io.IOException;
 
-import static ch.qos.logback.classic.Level.ERROR;
-import static ch.qos.logback.classic.Level.WARN;
+import static de.dm.infrastructure.logcapture.ExpectedException.exception;
+import static de.dm.infrastructure.logcapture.LogExpectation.error;
+import static de.dm.infrastructure.logcapture.LogExpectation.warn;
 import static de.dm.prom.structuredlogging.StructuredMdcJsonProvider.JSON_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -106,8 +106,7 @@ class MdcContextUnitTest {
             log.info("something happened");
         }
 
-        logCapture.assertLogged(ERROR, "Object cannot be serialized\\: \"I have a toString method\"");
-        //TODO: aktuelle logCapture-Version verwenden und Exception asserten
+        logCapture.assertLogged(error("Object cannot be serialized\\: \"I have a toString method\"", exception().expectedMessageRegex("something terrible happened").build()));
     }
 
     private void assertMdcFieldContentIsCorrect(String mdcFieldName, String expectedJson) throws JsonProcessingException {
@@ -172,7 +171,7 @@ class MdcContextUnitTest {
     void failedUpdate() {
         MdcContext.update(ExampleBean.getExample());
 
-        logCapture.assertLogged(WARN, "^Cannot update content of MDC key ExampleBean in .*\\.failedUpdate\\(MdcContextUnitTest.java:[0-9]+\\) because it does not exist.$");
+        logCapture.assertLogged(warn("^Cannot update content of MDC key ExampleBean in .*\\.failedUpdate\\(MdcContextUnitTest.java:[0-9]+\\) because it does not exist.$"));
     }
 
     @Test
@@ -197,14 +196,13 @@ class MdcContextUnitTest {
         }
         assertThat(MDC.get(mdcKey)).isNull();
 
-        logCapture
-                .assertLogged(WARN, "^Overwriting MDC key string_sample in .*\\.accidentallyOverwriteMDCValue\\(MdcContextUnitTest.java:[0-9]+\\) " +
+        logCapture.assertLoggedInOrder(warn("^Overwriting MDC key string_sample in .*\\.accidentallyOverwriteMDCValue\\(MdcContextUnitTest.java:[0-9]+\\) " +
                         "- a context with a certain key should never contain another context with the same one. " +
-                        "The value is overwritten with the same value. This is superfluous and should be removed.")
-                .thenLogged(Level.ERROR, "^Overwriting MDC key string_sample in .*\\.accidentallyOverwriteMDCValue\\(MdcContextUnitTest.java:[0-9]+\\) " +
+                        "The value is overwritten with the same value. This is superfluous and should be removed."),
+                error("^Overwriting MDC key string_sample in .*\\.accidentallyOverwriteMDCValue\\(MdcContextUnitTest.java:[0-9]+\\) " +
                         "- a context with a certain key should never contain another context with the same one. " +
                         "The old value differs from new value. This should never happen, because it messes up the MDC context. " +
-                        "Old value: MDC_JSON_VALUE:\"some value\" - new value: MDC_JSON_VALUE:\"other value\"");
+                        "Old value: MDC_JSON_VALUE:\"some value\" - new value: MDC_JSON_VALUE:\"other value\""));
     }
 
     // useful for this test: ObjectMapper is not needed for comparison of serialized JSON

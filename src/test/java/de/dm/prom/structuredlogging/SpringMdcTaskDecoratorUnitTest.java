@@ -16,8 +16,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static ch.qos.logback.classic.Level.DEBUG;
-import static ch.qos.logback.classic.Level.WARN;
+import static de.dm.infrastructure.logcapture.LogExpectation.debug;
+import static de.dm.infrastructure.logcapture.LogExpectation.warn;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -104,8 +104,9 @@ class SpringMdcTaskDecoratorUnitTest {
 
         Assertions.assertThat(MDC.get("testKey")).isEqualTo("testValue"); //value should still be set in main thread
 
-        logCapture.assertLogged(WARN, "^MDC context was not set for runnable because it was run in a thread that already had a context. MDC keys present: \\[existing_key\\]$")
-                .thenLogged(WARN, "^MDC context was not set for runnable because it was run in a thread that already had a context. MDC keys present: \\[existing_key\\]$");
+        logCapture.assertLoggedInOrder(
+                warn("^MDC context was not set for runnable because it was run in a thread that already had a context. MDC keys present: \\[existing_key\\]$"),
+                warn("^MDC context was not set for runnable because it was run in a thread that already had a context. MDC keys present: \\[existing_key\\]$"));
     }
 
     private Runnable collectingThrowables(Runnable runnable) {
@@ -150,10 +151,10 @@ class SpringMdcTaskDecoratorUnitTest {
 
         Assertions.assertThat(MDC.get("testKey")).isEqualTo("testValue"); //value should still be set in main thread
 
-        logCapture.assertLogged(WARN, "^MDC context will be set despite MDC keys being present in target thread. MDC keys present: \\[existing_key\\]$")
-                .thenLogged(DEBUG, "^MDC context set for runnable.$")
-                .thenLogged(WARN, "^MDC context will be set despite MDC keys being present in target thread. MDC keys present: \\[existing_key\\]$")
-                .thenLogged(DEBUG, "^MDC context set for runnable.$");
+        logCapture.assertLoggedInOrder(warn("^MDC context will be set despite MDC keys being present in target thread. MDC keys present: \\[existing_key\\]$"),
+                debug("^MDC context set for runnable.$"),
+                warn("^MDC context will be set despite MDC keys being present in target thread. MDC keys present: \\[existing_key\\]$"),
+                debug("^MDC context set for runnable.$"));
     }
 
     @Test
@@ -182,8 +183,8 @@ class SpringMdcTaskDecoratorUnitTest {
 
         Assertions.assertThat(MDC.get("testKey")).isEqualTo("testValue"); //value should still be set in main thread
 
-        logCapture.assertLogged(DEBUG, "^MDC context set for runnable.$")
-                .thenLogged(DEBUG, "^MDC context set for runnable.$");
+        logCapture.assertLoggedInOrder(debug("^MDC context set for runnable.$"),
+                debug("^MDC context set for runnable.$"));
     }
 
     @Test
@@ -215,8 +216,9 @@ class SpringMdcTaskDecoratorUnitTest {
 
         Assertions.assertThat(MDC.get("testKey")).isEqualTo("testValue"); //value should still be set in main thread
 
-        logCapture.assertLogged(DEBUG, "^MDC context set for runnable.$")
-                .thenLogged(DEBUG, "^MDC context set for runnable.$")
+        logCapture.assertLoggedInOrder(
+                        debug("^MDC context set for runnable.$"),
+                        debug("^MDC context set for runnable.$"))
                 .assertNothingElseLogged();
     }
 
