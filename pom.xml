@@ -41,15 +41,15 @@
         <assertj.version>3.17.2</assertj.version>
         <mockito.version>3.5.13</mockito.version>
         <log-capture.version>3.5.0</log-capture.version>
-        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-        <maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
+        <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
+        <maven-javadoc-plugin.version>3.3.2</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
         <maven-checkstyle-plugin.version>3.1.1</maven-checkstyle-plugin.version>
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
         <nexus-staging-maven-plugin.version>${maven-gpg-plugin.version}.8</nexus-staging-maven-plugin.version>
-        <checkstyle.version>8.36.2</checkstyle.version>
+        <checkstyle.version>10.3.3</checkstyle.version>
     </properties>
 
     <dependencies>
@@ -239,14 +239,6 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
                         <version>${maven-source-plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar-no-fork</goal>
-                                </goals>
-                            </execution>
-                        </executions>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -256,7 +248,8 @@
                             <source>${java.version}</source>
                             <encoding>${encoding}</encoding>
                         </configuration>
-                        <executions>
+                        <executions><!-- not actually for needed for deployment (called explicitly in sign_and_deploy.sh)
+                         - but it's nice to get javadoc warnings/errors on plain 'mvn clean verify' -->
                             <execution>
                                 <id>attach-javadocs</id>
                                 <goals>
