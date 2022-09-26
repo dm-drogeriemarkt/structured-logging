@@ -316,7 +316,7 @@ If you want to use your own ObjectMapper for serialization, you can exchange the
 
 ### 2.0.6
 
-* **New Feature**: Made the used ObjectMapper serializable
+* **New Feature**: Made the used ObjectMapper configurable
 * updated dependencies
 
 ### 2.0.5
