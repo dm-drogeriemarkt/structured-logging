@@ -1,0 +1,11 @@
+name: Build
+
+on:
+  push:
+
+jobs:
+  build:
+    uses: ./.github/workflows/run-with-maven.yml
+    with:
+      COMMAND: >
+        mvn --batch-mode -Dmaven.compiler.showDeprecation=true -Dmaven.compiler.showWarnings=true -Dproject.version=0.0.0-SNAPSHOT clean install
