@@ -1,4 +1,9 @@
-# Structured Logging [<img src="https://opensourcelogos.aws.dmtech.cloud/dmTECH_opensource_logo.svg" height="20" width="130">](https://dmtech.de/) [![Build Status](https://travis-ci.org/dm-drogeriemarkt/structured-logging.svg?branch=master)](https://travis-ci.org/dm-drogeriemarkt/structured-logging)
+# Structured Logging 
+
+[<img src="https://opensourcelogos.aws.dmtech.cloud/dmTECH_opensource_logo.svg" height="20" width="130">](https://dmtech.de/) 
+[![Apache License 2](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Build Status](https://github.com/dm-drogeriemarkt/structured-logging/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/dm-drogeriemarkt/structured-logging/actions?query=branch%3Amaster)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.dm.infrastructure/structured-logging/badge.svg)](https://maven-badges.herokuapp.com/maven-central/de.dm.infrastructure/structured-logging)
 
 Structured Logging is a library that complements [SLF4J](http://www.slf4j.org/) and
 its  [MDC](http://logback.qos.ch/manual/mdc.html) to
