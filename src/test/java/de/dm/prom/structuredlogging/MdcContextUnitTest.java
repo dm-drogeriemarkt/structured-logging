@@ -1,20 +1,24 @@
 package de.dm.prom.structuredlogging;
 
-import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.dm.infrastructure.logcapture.LogCapture;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.MDC;
 
 import java.io.IOException;
 
-import static ch.qos.logback.classic.Level.WARN;
+import static de.dm.infrastructure.logcapture.ExpectedException.exception;
+import static de.dm.infrastructure.logcapture.LogExpectation.error;
+import static de.dm.infrastructure.logcapture.LogExpectation.warn;
 import static de.dm.prom.structuredlogging.StructuredMdcJsonProvider.JSON_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Slf4j
 class MdcContextUnitTest {
@@ -39,6 +43,11 @@ class MdcContextUnitTest {
     @RegisterExtension
     public LogCapture logCapture = LogCapture.forCurrentPackage();
 
+    @AfterEach
+    void resetMdc() {
+        MdcContext.resetGlobalObjectMapper();
+    }
+
     @Test
     void createSampleContextWithContextId() throws IOException {
         try (MdcContext c = MdcContext.of(ExampleBeanKeySupplier.class, ExampleBean.getExample())) {
@@ -60,6 +69,46 @@ class MdcContextUnitTest {
         }
     }
 
+    @Test
+    void customObjectMapperIsUsedAndReset() throws IOException {
+        ObjectMapper customObjectMapper = mock(ObjectMapper.class);
+        ExampleBean objectToSerialize = ExampleBean.getExample();
+        String expectedCustomJson = "{\"content\": \"custom json string\"}";
+
+        when(customObjectMapper.writeValueAsString(objectToSerialize)).thenReturn(expectedCustomJson);
+
+        try (MdcContext c = MdcContext.of(objectToSerialize)) {
+            assertMdcFieldContentIsCorrect("ExampleBean", SAMPLE_BEAN_JSON);
+        }
+
+        MdcContext.setGlobalObjectMapper(customObjectMapper);
+
+        try (MdcContext c = MdcContext.of(objectToSerialize)) {
+            assertMdcFieldContentIsCorrect("ExampleBean", expectedCustomJson);
+        }
+
+        MdcContext.resetGlobalObjectMapper();
+
+        try (MdcContext c = MdcContext.of(objectToSerialize)) {
+            assertMdcFieldContentIsCorrect("ExampleBean", SAMPLE_BEAN_JSON);
+        }
+    }
+
+    @Test
+    void exceptionsThrownByObjectMapperAreCaughtAndLogged() throws IOException {
+        ObjectMapper customObjectMapper = mock(ObjectMapper.class);
+        String objectToSerialize = "I have a toString method";
+
+        when(customObjectMapper.writeValueAsString(objectToSerialize)).thenThrow(new RuntimeException("something terrible happened"));
+
+        MdcContext.setGlobalObjectMapper(customObjectMapper);
+        try (MdcContext c = MdcContext.of(objectToSerialize)) {
+            log.info("something happened");
+        }
+
+        logCapture.assertLogged(error("Object cannot be serialized\\: \"I have a toString method\"", exception().expectedMessageRegex("something terrible happened").build()));
+    }
+
     private void assertMdcFieldContentIsCorrect(String mdcFieldName, String expectedJson) throws JsonProcessingException {
         String jsonStringFromMdc = MDC.get(mdcFieldName);
 
@@ -71,7 +120,7 @@ class MdcContextUnitTest {
         JsonNode treeFromMDC = objectMapper.readTree(actualJson);
 
         assertThat(treeFromMDC).as("Expecting:\n<%s>\nto be equal to:\n<%s>\nbut was not.\n\n\n",
-                treeFromMDC.toPrettyString(), sampleBeanTree.toPrettyString())
+                        treeFromMDC.toPrettyString(), sampleBeanTree.toPrettyString())
                 .isEqualTo(sampleBeanTree);
     }
 
@@ -122,7 +171,7 @@ class MdcContextUnitTest {
     void failedUpdate() {
         MdcContext.update(ExampleBean.getExample());
 
-        logCapture.assertLogged(WARN, "^Cannot update content of MDC key ExampleBean in .*\\.failedUpdate\\(MdcContextUnitTest.java:[0-9]+\\) because it does not exist.$");
+        logCapture.assertLogged(warn("^Cannot update content of MDC key ExampleBean in .*\\.failedUpdate\\(MdcContextUnitTest.java:[0-9]+\\) because it does not exist.$"));
     }
 
     @Test
@@ -147,14 +196,13 @@ class MdcContextUnitTest {
         }
         assertThat(MDC.get(mdcKey)).isNull();
 
-        logCapture
-                .assertLogged(WARN, "^Overwriting MDC key string_sample in .*\\.accidentallyOverwriteMDCValue\\(MdcContextUnitTest.java:[0-9]+\\) " +
+        logCapture.assertLoggedInOrder(warn("^Overwriting MDC key string_sample in .*\\.accidentallyOverwriteMDCValue\\(MdcContextUnitTest.java:[0-9]+\\) " +
                         "- a context with a certain key should never contain another context with the same one. " +
-                        "The value is overwritten with the same value. This is superfluous and should be removed.")
-                .thenLogged(Level.ERROR, "^Overwriting MDC key string_sample in .*\\.accidentallyOverwriteMDCValue\\(MdcContextUnitTest.java:[0-9]+\\) " +
+                        "The value is overwritten with the same value. This is superfluous and should be removed."),
+                error("^Overwriting MDC key string_sample in .*\\.accidentallyOverwriteMDCValue\\(MdcContextUnitTest.java:[0-9]+\\) " +
                         "- a context with a certain key should never contain another context with the same one. " +
                         "The old value differs from new value. This should never happen, because it messes up the MDC context. " +
-                        "Old value: MDC_JSON_VALUE:\"some value\" - new value: MDC_JSON_VALUE:\"other value\"");
+                        "Old value: MDC_JSON_VALUE:\"some value\" - new value: MDC_JSON_VALUE:\"other value\""));
     }
 
     // useful for this test: ObjectMapper is not needed for comparison of serialized JSON

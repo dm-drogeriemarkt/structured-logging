@@ -31,16 +31,16 @@
     <properties>
         <java.version>1.8</java.version>
         <encoding>UTF-8</encoding>
-        <logstash-logback-encoder.version>6.4</logstash-logback-encoder.version>
-        <lombok.version>1.18.14</lombok.version>
+        <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
+        <lombok.version>1.18.24</lombok.version>
         <slf4j.version>1.7.30</slf4j.version>
         <logback.version>1.2.3</logback.version>
         <spring.version>5.3.19</spring.version>
-        <spring.boot.version>2.3.4.RELEASE</spring.boot.version>
+        <spring.boot.version>2.7.3</spring.boot.version>
         <junit-jupiter.version>5.7.0</junit-jupiter.version>
         <assertj.version>3.17.2</assertj.version>
         <mockito.version>3.5.13</mockito.version>
-        <log-capture.version>3.1.0</log-capture.version>
+        <log-capture.version>3.5.0</log-capture.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>

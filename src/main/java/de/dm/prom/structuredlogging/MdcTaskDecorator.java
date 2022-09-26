@@ -1,6 +1,5 @@
 package de.dm.prom.structuredlogging;
 
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 
@@ -8,8 +7,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-
-import static lombok.AccessLevel.PRIVATE;
 
 /**
  * generic task decorator inspired by Spring's task decorator - to be used in other frameworks
@@ -19,8 +16,10 @@ import static lombok.AccessLevel.PRIVATE;
  * see the documentation on how to use this
  */
 @Slf4j
-@NoArgsConstructor(access = PRIVATE)
-public class MdcTaskDecorator {
+public final class MdcTaskDecorator {
+    private MdcTaskDecorator() {
+    }
+
     /**
      * use this do decorate a runnable intended to run in a separate thread - it will be decorated so that the main
      * thread's MDC Context will be copied to the other thread - and removed when runnable is done
