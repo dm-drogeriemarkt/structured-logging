@@ -51,6 +51,7 @@ all without writing more code, because you already have all information you need
   * [Changing serialization by using Jackson annotations](#changing-serialization-by-using-jackson-annotations)
   * [Changing serialization by using a custom ObjectMapper](#changing-serialization-by-using-a-custom-objectmapper)
 * [Changes](#changes)
+  * [3.0.0](#300)
   * [2.0.6](#206)
   * [2.0.5](#205)
   * [2.0.4](#204)
@@ -318,6 +319,11 @@ public class TimeMachine {
 If you want to use your own ObjectMapper for serialization, you can exchange the used default ObjectMapper by calling `setGlobalObjectMapper`. To reset to the default ObjectMapper, you can use `resetGlobalObjectMapper` at any time.
 
 ## Changes
+
+### 3.0.0
+
+* **Breaking change** updates Dependencies to new major versions (Spring and Slf4j) and updates to Java 17
+  * note that Spring remains an optional dependency and will not be included if you're not using structred-logging, but are not using Spring
 
 ### 2.0.6
 
