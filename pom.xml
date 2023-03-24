@@ -37,7 +37,7 @@
         <lombok.version>1.18.24</lombok.version>
         <slf4j.version>1.7.30</slf4j.version>
         <logback.version>1.2.3</logback.version>
-        <spring.version>5.3.23</spring.version>
+        <spring.version>5.3.26</spring.version>
         <spring.boot.version>2.7.4</spring.boot.version>
         <junit-jupiter.version>5.7.0</junit-jupiter.version>
         <assertj.version>3.17.2</assertj.version>
