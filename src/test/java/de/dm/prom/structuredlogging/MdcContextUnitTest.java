@@ -16,7 +16,7 @@ import java.io.IOException;
 import static de.dm.infrastructure.logcapture.ExpectedException.exception;
 import static de.dm.infrastructure.logcapture.LogExpectation.error;
 import static de.dm.infrastructure.logcapture.LogExpectation.warn;
-import static de.dm.prom.structuredlogging.MdcContext.withMdc;
+import static de.dm.prom.structuredlogging.MdcContext.mdc;
 import static de.dm.prom.structuredlogging.StructuredMdcJsonProvider.JSON_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -62,14 +62,14 @@ class MdcContextUnitTest {
 
         @Test
         void withRunnable() throws IOException {
-            withMdc(ExampleBeanKeySupplier.class, ExampleBean.getExample(), () ->
+            mdc(ExampleBeanKeySupplier.class, ExampleBean.getExample(), () ->
                     assertMdcFieldContentIsCorrect("example_bean", SAMPLE_BEAN_JSON));
         }
 
         @Test
         void withThrowingRunnable() {
             try {
-                withMdc(ExampleBeanKeySupplier.class, ExampleBean.getExample(), () -> {
+                mdc(ExampleBeanKeySupplier.class, ExampleBean.getExample(), () -> {
                     assertMdcFieldContentIsCorrect("example_bean", SAMPLE_BEAN_JSON);
                     throwIOException();
                 });
@@ -81,7 +81,7 @@ class MdcContextUnitTest {
 
         @Test
         void withSupplier() throws IOException {
-            var actual = withMdc(ExampleBeanKeySupplier.class, ExampleBean.getExample(), () -> {
+            var actual = mdc(ExampleBeanKeySupplier.class, ExampleBean.getExample(), () -> {
                 assertMdcFieldContentIsCorrect("example_bean", SAMPLE_BEAN_JSON);
                 return 42;
             });
@@ -91,7 +91,7 @@ class MdcContextUnitTest {
         @Test
         void withThrowingSupplier() {
             try {
-                withMdc(ExampleBeanKeySupplier.class, ExampleBean.getExample(), () -> {
+                mdc(ExampleBeanKeySupplier.class, ExampleBean.getExample(), () -> {
                     assertMdcFieldContentIsCorrect("example_bean", SAMPLE_BEAN_JSON);
                     throwIOException();
                     return 42;
@@ -114,14 +114,14 @@ class MdcContextUnitTest {
 
         @Test
         void withRunnable() throws IOException {
-            withMdc(ExampleBean.getExample(), () ->
+            mdc(ExampleBean.getExample(), () ->
                     assertMdcFieldContentIsCorrect("ExampleBean", SAMPLE_BEAN_JSON));
         }
 
         @Test
         void withThrowingRunnable() {
             try {
-                withMdc(ExampleBean.getExample(), () -> {
+                mdc(ExampleBean.getExample(), () -> {
                     assertMdcFieldContentIsCorrect("ExampleBean", SAMPLE_BEAN_JSON);
                     throwIOException();
                 });
@@ -133,7 +133,7 @@ class MdcContextUnitTest {
 
         @Test
         void withSupplier() throws IOException {
-            var actual = withMdc(ExampleBean.getExample(), () -> {
+            var actual = mdc(ExampleBean.getExample(), () -> {
                 assertMdcFieldContentIsCorrect("ExampleBean", SAMPLE_BEAN_JSON);
                 return 42;
             });
@@ -143,7 +143,7 @@ class MdcContextUnitTest {
         @Test
         void withThrowingSupplier() {
             try {
-                withMdc(ExampleBean.getExample(), () -> {
+                mdc(ExampleBean.getExample(), () -> {
                     assertMdcFieldContentIsCorrect("ExampleBean", SAMPLE_BEAN_JSON);
                     throwIOException();
                     return 42;
@@ -166,14 +166,14 @@ class MdcContextUnitTest {
 
         @Test
         void withRunnable() throws IOException {
-            withMdc("explicit_key", ExampleBean.getExample(), () ->
+            mdc("explicit_key", ExampleBean.getExample(), () ->
                     assertMdcFieldContentIsCorrect("explicit_key", SAMPLE_BEAN_JSON));
         }
 
         @Test
         void withThrowingRunnable() {
             try {
-                withMdc("explicit_key", ExampleBean.getExample(), () -> {
+                mdc("explicit_key", ExampleBean.getExample(), () -> {
                     assertMdcFieldContentIsCorrect("explicit_key", SAMPLE_BEAN_JSON);
                     throwIOException();
                 });
@@ -185,7 +185,7 @@ class MdcContextUnitTest {
 
         @Test
         void withSupplier() throws IOException {
-            var actual = withMdc("explicit_key", ExampleBean.getExample(), () -> {
+            var actual = mdc("explicit_key", ExampleBean.getExample(), () -> {
                 assertMdcFieldContentIsCorrect("explicit_key", SAMPLE_BEAN_JSON);
                 return 42;
             });
@@ -195,7 +195,7 @@ class MdcContextUnitTest {
         @Test
         void withThrowingSupplier() {
             try {
-                withMdc("explicit_key", ExampleBean.getExample(), () -> {
+                mdc("explicit_key", ExampleBean.getExample(), () -> {
                     assertMdcFieldContentIsCorrect("explicit_key", SAMPLE_BEAN_JSON);
                     throwIOException();
                     return 42;

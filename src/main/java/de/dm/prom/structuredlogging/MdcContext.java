@@ -138,7 +138,7 @@ public final class MdcContext implements java.io.Closeable {
      *
      * @throws E checked exception thrown by callback
      */
-    public static <T, E extends Throwable> T withMdc(Object mdcValue, MdcSupplier<T, E> supplier) throws E {
+    public static <T, E extends Throwable> T mdc(Object mdcValue, MdcSupplier<T, E> supplier) throws E {
         try (MdcContext c = MdcContext.of(mdcValue)) {
             return supplier.get();
         }
@@ -153,7 +153,7 @@ public final class MdcContext implements java.io.Closeable {
      *
      * @throws E checked exception thrown by callback
      */
-    public static <E extends Throwable> void withMdc(Object mdcValue, MdcRunnable<E> runnable) throws E {
+    public static <E extends Throwable> void mdc(Object mdcValue, MdcRunnable<E> runnable) throws E {
         try (MdcContext c = MdcContext.of(mdcValue)) {
             runnable.run();
         }
@@ -172,7 +172,7 @@ public final class MdcContext implements java.io.Closeable {
      *
      * @throws E checked exception thrown by callback
      */
-    public static <T, E extends Throwable> T withMdc(String mdcKey, Object mdcValue, MdcSupplier<T, E> supplier) throws E {
+    public static <T, E extends Throwable> T mdc(String mdcKey, Object mdcValue, MdcSupplier<T, E> supplier) throws E {
         try (MdcContext c = MdcContext.of(mdcKey, mdcValue)) {
             return supplier.get();
         }
@@ -188,7 +188,7 @@ public final class MdcContext implements java.io.Closeable {
      *
      * @throws E checked exception thrown by callback
      */
-    public static <E extends Throwable> void withMdc(String mdcKey, Object mdcValue, MdcRunnable<E> runnable) throws E {
+    public static <E extends Throwable> void mdc(String mdcKey, Object mdcValue, MdcRunnable<E> runnable) throws E {
         try (MdcContext c = MdcContext.of(mdcKey, mdcValue)) {
             runnable.run();
         }
@@ -209,7 +209,7 @@ public final class MdcContext implements java.io.Closeable {
      *
      * @throws E checked exception thrown by callback
      */
-    public static <T, E extends Throwable, M, S extends MdcKeySupplier<M>> T withMdc(Class<S> keySupplier, M mdcValue, MdcSupplier<T, E> supplier) throws E {
+    public static <T, E extends Throwable, M, S extends MdcKeySupplier<M>> T mdc(Class<S> keySupplier, M mdcValue, MdcSupplier<T, E> supplier) throws E {
         try (MdcContext c = MdcContext.of(keySupplier, mdcValue)) {
             return supplier.get();
         }
@@ -227,7 +227,7 @@ public final class MdcContext implements java.io.Closeable {
      *
      * @throws E checked exception thrown by callback
      */
-    public static <E extends Throwable, M, S extends MdcKeySupplier<M>> void withMdc(Class<S> keySupplier, M mdcValue, MdcRunnable<E> runnable) throws E {
+    public static <E extends Throwable, M, S extends MdcKeySupplier<M>> void mdc(Class<S> keySupplier, M mdcValue, MdcRunnable<E> runnable) throws E {
         try (MdcContext c = MdcContext.of(keySupplier, mdcValue)) {
             runnable.run();
         }
