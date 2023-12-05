@@ -204,7 +204,7 @@ mdc(timeMachine, () -> {
 log.info("another message without context");
 ```
 
-you can also return values:
+You can also return values:
 
 ```java
 var currentTime = mdc(timeMachine, () -> {
@@ -316,10 +316,11 @@ mdc(TimeMachineKey.class, timeMachine, () -> {
 
 You can also use try-with-resources to manage your MDC context if you prefer that or need to.
 
-For example, the following code would ...
+For example, the following code ...
 
-1. ... not be possible with the callback API because `availableSeats` is not effectively final
-1. ... be inconvenient, because there are multiple values in the MDC context, which would require nested callbacks
+1. ... would not be possible with the callback API because `availableSeats` is not effectively final
+1. ... would be inconvenient, because there are multiple values in the MDC context, which would require nested callbacks
+1. ... may not be possible if `seat.isAvaliable()` can throw **multiple** checked Exceptions. The callback API works with one checked Exception, though.
 
 ```java
 int availableSeats = 0;
