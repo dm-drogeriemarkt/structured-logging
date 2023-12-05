@@ -314,13 +314,11 @@ mdc(TimeMachineKey.class, timeMachine, () -> {
 
 ### Use try-with-resources instead of a callback
 
-You can also use try-with-resources to manage your MDC context if you prefer that or need to.
+You can also use try-with-resources to manage your MDC context if you prefer that or need to. For example, the following code
 
-For example, the following code ...
-
-1. ... would not be possible with the callback API because `availableSeats` is not effectively final
-1. ... would be inconvenient, because there are multiple values in the MDC context, which would require nested callbacks
-1. ... may not be possible if `seat.isAvaliable()` can throw **multiple** checked Exceptions. The callback API works with one checked Exception, though.
+1. would not be possible with the callback API because `availableSeats` is not effectively final
+1. would be inconvenient, because there are multiple values in the MDC context, which would require nested callbacks
+1. may not be possible with the callback API if `seat.isAvaliable()` can throw **multiple** checked Exceptions. The callback API works with one checked Exception, though.
 
 ```java
 int availableSeats = 0;
