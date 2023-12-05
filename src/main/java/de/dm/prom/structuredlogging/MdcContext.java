@@ -127,6 +127,113 @@ public final class MdcContext implements java.io.Closeable {
     }
 
     /**
+     * execute a supplier with MDC Context
+     *
+     * @param mdcValue the object to write to MDC
+     * @param supplier the callback to execute with the MDC Context
+     * @param <T> type of return value
+     * @param <E> type of checked Exception thrown (if any, can usually be inferred)
+     *
+     * @return the return value of the callback
+     *
+     * @throws E checked exception thrown by callback
+     */
+    public static <T, E extends Throwable> T withMdc(Object mdcValue, MdcSupplier<T, E> supplier) throws E {
+        try (MdcContext c = MdcContext.of(mdcValue)) {
+            return supplier.get();
+        }
+    }
+
+    /**
+     * execute a runnable with MDC Context
+     *
+     * @param mdcValue the object to write to MDC
+     * @param runnable the callback to execute with the MDC Context
+     * @param <E> type of checked Exception thrown (if any, can usually be inferred)
+     *
+     * @throws E checked exception thrown by callback
+     */
+    public static <E extends Throwable> void withMdc(Object mdcValue, MdcRunnable<E> runnable) throws E {
+        try (MdcContext c = MdcContext.of(mdcValue)) {
+            runnable.run();
+        }
+    }
+
+    /**
+     * execute a supplier with MDC Context
+     *
+     * @param mdcKey MDC key to use
+     * @param mdcValue the object to write to MDC
+     * @param supplier the callback to execute with the MDC Context
+     * @param <T> type of return value
+     * @param <E> type of checked Exception thrown (if any, can usually be inferred)
+     *
+     * @return the return value of the callback
+     *
+     * @throws E checked exception thrown by callback
+     */
+    public static <T, E extends Throwable> T withMdc(String mdcKey, Object mdcValue, MdcSupplier<T, E> supplier) throws E {
+        try (MdcContext c = MdcContext.of(mdcKey, mdcValue)) {
+            return supplier.get();
+        }
+    }
+
+    /**
+     * execute a runnable with MDC Context
+     *
+     * @param mdcKey MDC key to use
+     * @param mdcValue the object to write to MDC
+     * @param runnable the callback to execute with the MDC Context
+     * @param <E> type of checked Exception thrown (if any, can usually be inferred)
+     *
+     * @throws E checked exception thrown by callback
+     */
+    public static <E extends Throwable> void withMdc(String mdcKey, Object mdcValue, MdcRunnable<E> runnable) throws E {
+        try (MdcContext c = MdcContext.of(mdcKey, mdcValue)) {
+            runnable.run();
+        }
+    }
+
+    /**
+     * execute a supplier with MDC Context
+     *
+     * @param keySupplier {@link de.dm.prom.structuredlogging.MdcKeySupplier} implementation to describe which MDC key to use
+     * @param mdcValue the object to write to MDC
+     * @param supplier the callback to execute with the MDC Context
+     * @param <T> type of return value
+     * @param <E> type of checked Exception thrown (if any, can usually be inferred)
+     * @param <M> the type of the object to serialize
+     * @param <S> an implementation of MdcKeySupplier that supplies the MDC key for a certain type
+     *
+     * @return the return value of the callback
+     *
+     * @throws E checked exception thrown by callback
+     */
+    public static <T, E extends Throwable, M, S extends MdcKeySupplier<M>> T withMdc(Class<S> keySupplier, M mdcValue, MdcSupplier<T, E> supplier) throws E {
+        try (MdcContext c = MdcContext.of(keySupplier, mdcValue)) {
+            return supplier.get();
+        }
+    }
+
+    /**
+     * execute a runnable with MDC Context
+     *
+     * @param keySupplier {@link de.dm.prom.structuredlogging.MdcKeySupplier} implementation to describe which MDC key to use
+     * @param mdcValue the object to write to MDC
+     * @param runnable the callback to execute with the MDC Context
+     * @param <E> type of checked Exception thrown (if any, can usually be inferred)
+     * @param <M> the type of the object to serialize
+     * @param <S> an implementation of MdcKeySupplier that supplies the MDC key for a certain type
+     *
+     * @throws E checked exception thrown by callback
+     */
+    public static <E extends Throwable, M, S extends MdcKeySupplier<M>> void withMdc(Class<S> keySupplier, M mdcValue, MdcRunnable<E> runnable) throws E {
+        try (MdcContext c = MdcContext.of(keySupplier, mdcValue)) {
+            runnable.run();
+        }
+    }
+
+    /**
      * update an existing MDC context
      * <p>
      * use this to update an MDC context ensuring that the same key is always used for a certain type

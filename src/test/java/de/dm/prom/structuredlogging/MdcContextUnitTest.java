@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.dm.infrastructure.logcapture.LogCapture;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.MDC;
@@ -15,8 +16,10 @@ import java.io.IOException;
 import static de.dm.infrastructure.logcapture.ExpectedException.exception;
 import static de.dm.infrastructure.logcapture.LogExpectation.error;
 import static de.dm.infrastructure.logcapture.LogExpectation.warn;
+import static de.dm.prom.structuredlogging.MdcContext.withMdc;
 import static de.dm.prom.structuredlogging.StructuredMdcJsonProvider.JSON_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -48,26 +51,166 @@ class MdcContextUnitTest {
         MdcContext.resetGlobalObjectMapper();
     }
 
-    @Test
-    void createSampleContextWithContextId() throws IOException {
-        try (MdcContext c = MdcContext.of(ExampleBeanKeySupplier.class, ExampleBean.getExample())) {
-            assertMdcFieldContentIsCorrect("example_bean", SAMPLE_BEAN_JSON);
+    @Nested
+    class ContextId {
+        @Test
+        void withTryBlock() throws IOException {
+            try (MdcContext c = MdcContext.of(ExampleBeanKeySupplier.class, ExampleBean.getExample())) {
+                assertMdcFieldContentIsCorrect("example_bean", SAMPLE_BEAN_JSON);
+            }
+        }
+
+        @Test
+        void withRunnable() throws IOException {
+            withMdc(ExampleBeanKeySupplier.class, ExampleBean.getExample(), () ->
+                    assertMdcFieldContentIsCorrect("example_bean", SAMPLE_BEAN_JSON));
+        }
+
+        @Test
+        void withThrowingRunnable() {
+            try {
+                withMdc(ExampleBeanKeySupplier.class, ExampleBean.getExample(), () -> {
+                    assertMdcFieldContentIsCorrect("example_bean", SAMPLE_BEAN_JSON);
+                    throwIOException();
+                });
+                fail("expected an Exception");
+            } catch (IOException e) {
+                // everything is fine
+            }
+        }
+
+        @Test
+        void withSupplier() throws IOException {
+            var actual = withMdc(ExampleBeanKeySupplier.class, ExampleBean.getExample(), () -> {
+                assertMdcFieldContentIsCorrect("example_bean", SAMPLE_BEAN_JSON);
+                return 42;
+            });
+            assertThat(actual).isEqualTo(42);
+        }
+
+        @Test
+        void withThrowingSupplier() {
+            try {
+                withMdc(ExampleBeanKeySupplier.class, ExampleBean.getExample(), () -> {
+                    assertMdcFieldContentIsCorrect("example_bean", SAMPLE_BEAN_JSON);
+                    throwIOException();
+                    return 42;
+                });
+                fail("expected an Exception");
+            } catch (IOException e) {
+                // everything is fine
+            }
         }
     }
 
-    @Test
-    void createSampleContextWithClassOnly() throws IOException {
-        try (MdcContext c = MdcContext.of(ExampleBean.getExample())) {
-            assertMdcFieldContentIsCorrect("ExampleBean", SAMPLE_BEAN_JSON);
+    @Nested
+    class ClassOnly {
+        @Test
+        void withTryBlock() throws IOException {
+            try (MdcContext c = MdcContext.of(ExampleBean.getExample())) {
+                assertMdcFieldContentIsCorrect("ExampleBean", SAMPLE_BEAN_JSON);
+            }
+        }
+
+        @Test
+        void withRunnable() throws IOException {
+            withMdc(ExampleBean.getExample(), () ->
+                    assertMdcFieldContentIsCorrect("ExampleBean", SAMPLE_BEAN_JSON));
+        }
+
+        @Test
+        void withThrowingRunnable() {
+            try {
+                withMdc(ExampleBean.getExample(), () -> {
+                    assertMdcFieldContentIsCorrect("ExampleBean", SAMPLE_BEAN_JSON);
+                    throwIOException();
+                });
+                fail("expected an Exception");
+            } catch (IOException e) {
+                // everything is fine
+            }
+        }
+
+        @Test
+        void withSupplier() throws IOException {
+            var actual = withMdc(ExampleBean.getExample(), () -> {
+                assertMdcFieldContentIsCorrect("ExampleBean", SAMPLE_BEAN_JSON);
+                return 42;
+            });
+            assertThat(actual).isEqualTo(42);
+        }
+
+        @Test
+        void withThrowingSupplier() {
+            try {
+                withMdc(ExampleBean.getExample(), () -> {
+                    assertMdcFieldContentIsCorrect("ExampleBean", SAMPLE_BEAN_JSON);
+                    throwIOException();
+                    return 42;
+                });
+                fail("expected an Exception");
+            } catch (IOException e) {
+                // everything is fine
+            }
         }
     }
 
-    @Test
-    void createSampleContextWithKey() throws IOException {
-        try (MdcContext c = MdcContext.of("explicit_key", ExampleBean.getExample())) {
-            assertMdcFieldContentIsCorrect("explicit_key", SAMPLE_BEAN_JSON);
+    @Nested
+    class KeyFromString {
+        @Test
+        void withTryBlock() throws IOException {
+            try (MdcContext c = MdcContext.of("explicit_key", ExampleBean.getExample())) {
+                assertMdcFieldContentIsCorrect("explicit_key", SAMPLE_BEAN_JSON);
+            }
+        }
+
+        @Test
+        void withRunnable() throws IOException {
+            withMdc("explicit_key", ExampleBean.getExample(), () ->
+                    assertMdcFieldContentIsCorrect("explicit_key", SAMPLE_BEAN_JSON));
+        }
+
+        @Test
+        void withThrowingRunnable() {
+            try {
+                withMdc("explicit_key", ExampleBean.getExample(), () -> {
+                    assertMdcFieldContentIsCorrect("explicit_key", SAMPLE_BEAN_JSON);
+                    throwIOException();
+                });
+                fail("expected an Exception");
+            } catch (IOException e) {
+                // everything is fine
+            }
+        }
+
+        @Test
+        void withSupplier() throws IOException {
+            var actual = withMdc("explicit_key", ExampleBean.getExample(), () -> {
+                assertMdcFieldContentIsCorrect("explicit_key", SAMPLE_BEAN_JSON);
+                return 42;
+            });
+            assertThat(actual).isEqualTo(42);
+        }
+
+        @Test
+        void withThrowingSupplier() {
+            try {
+                withMdc("explicit_key", ExampleBean.getExample(), () -> {
+                    assertMdcFieldContentIsCorrect("explicit_key", SAMPLE_BEAN_JSON);
+                    throwIOException();
+                    return 42;
+                });
+                fail("expected an Exception");
+            } catch (IOException e) {
+                // everything is fine
+            }
         }
     }
+
+    private static void throwIOException() throws IOException {
+        throw new IOException("not really an IOException, just an example");
+    }
+
 
     @Test
     void customObjectMapperIsUsedAndReset() throws IOException {
