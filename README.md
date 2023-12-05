@@ -30,12 +30,37 @@ Now you can
 
 all without writing more code, because you already have all information you need in the context of your log messages.
 
+## How?
+
+If there are log messages that happen in the context of an order, you may want to attach information about that order to
+these log messages.
+
+```java
+    mdc(incomingOrder, () -> {
+        log.info("A new order has come in.");
+        
+        if(isValid(incomingOrder)){
+            prepareForDelivery(incomingOrder);
+        }
+    });
+```
+
+The `incomingOrder` will be attached to the log messages generated in this `try` block, including
+
+* the message from `log.info("A new order has come in.")` .
+* all messages logged by `prepareForDelivery(...)`, `isValid(...)`
+* all messages logged by methods called indirectly by the methods above
+
+Here's what a log message with an `incomingOrder` looks like in Kibana:
+
+![Kibana-Example](docs/structured-logging-kibana.png)
+
 ---
 
 **Table of Contents**
 
 * [Why?](#why)
-* [Example](#example)
+* [How?](#how)
 * [Advantages](#advantages)
   * [Advantages over plain logging](#advantages-over-plain-logging)
   * [Advantages over using MDC directly](#advantages-over-using-mdc-directly)
@@ -64,31 +89,6 @@ all without writing more code, because you already have all information you need
 * [FAQ and Caveats](#faq-and-caveats)
 
 ---
-
-## Example
-
-If there are log messages that happen in the context of an order, you may want to attach information about that order to
-these log messages.
-
-```java
-    mdc(incomingOrder, () -> {
-        log.info("A new order has come in.");
-        
-        if(isValid(incomingOrder)){
-            prepareForDelivery(incomingOrder);
-        }
-    });
-```
-
-The `incomingOrder` will be attached to the log messages generated in this `try` block, including
-
-* the message from `log.info("A new order has come in.")` .
-* all messages logged by `prepareForDelivery(...)`, `isValid(...)`
-* all messages logged by methods called indirectly by the methods above
-
-Here's what a log message with an `incomingOrder` looks like in Kibana:
-
-![Kibana-Example](docs/structured-logging-kibana.png)
 
 ## Advantages
 
