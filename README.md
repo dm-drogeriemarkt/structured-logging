@@ -71,13 +71,13 @@ If there are log messages that happen in the context of an order, you may want t
 these log messages.
 
 ```java
-    try(var c = MdcContext.of(incomingOrder)){
+    mdc(incomingOrder, () -> {
         log.info("A new order has come in.");
         
         if(isValid(incomingOrder)){
             prepareForDelivery(incomingOrder);
         }
-    }
+    });
 ```
 
 The `incomingOrder` will be attached to the log messages generated in this `try` block, including
@@ -145,7 +145,7 @@ If you use maven, add this to your pom.xml:
 <dependency>
     <groupId>de.dm.infrastructure</groupId>
     <artifactId>structured-logging</artifactId>
-    <version>2.0.5</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 
