@@ -5,7 +5,7 @@
 
     <groupId>de.dm.infrastructure</groupId>
     <artifactId>structured-logging</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>${project.version}</version>
 
     <name>structured-logging</name>
     <description>Structured logging and log testing</description>
@@ -29,6 +29,8 @@
     </developers>
 
     <properties>
+        <project.version>4.0.0-SNAPSHOT</project.version>
+
         <java.version>17</java.version>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
