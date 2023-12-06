@@ -1,7 +1,8 @@
 package de.dm.prom.structuredlogging;
 
 import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.util.ContextInitializer;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.joran.spi.JoranException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -26,7 +27,7 @@ import java.io.IOException;
 // LogCapture is not applicable here because the actual output format of the log is relevant
 @Slf4j
 class StructuredMdcJsonProviderUnitTest {
-    private static String SAMPLE_LOGSTASH_JSON_LOG = "{\"@version\":\"1\"," +
+    private static final String SAMPLE_LOGSTASH_JSON_LOG = "{\"@version\":\"1\"," +
             "\"message\":\"something in which the ExampleBean context is relevant\"," +
             "\"logger_name\":\"de.dm.prom.structuredlogging.StructuredMdcJsonProviderUnitTest\"," +
             "\"thread_name\":\"main\"," +
@@ -51,14 +52,16 @@ class StructuredMdcJsonProviderUnitTest {
             "\"yearMonth\":\"2000-08\"," +
             "\"zonedDateTime\":\"2019-01-01T13:37Z[UTC]\"}}";
 
-    private Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+    private final Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 
 
     @BeforeEach
     void setupLogback() throws FileNotFoundException, JoranException {
         rootLogger.iteratorForAppenders().forEachRemaining(Appender::stop);
-        new ContextInitializer(rootLogger.getLoggerContext())
-                .configureByResource(ResourceUtils.getURL("src/test/resources/logback-stdout-json.xml"));
+        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+        JoranConfigurator configurator = new JoranConfigurator();
+        configurator.setContext(context);
+        configurator.doConfigure(ResourceUtils.getURL("src/test/resources/logback-stdout-json.xml"));
     }
 
     @AfterEach

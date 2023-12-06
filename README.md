@@ -1,4 +1,4 @@
-# Structured Logging 
+# Structured Logging
 
 [<img src="https://opensourcelogos.aws.dmtech.cloud/dmTECH_opensource_logo.svg" height="20" width="130">](https://dmtech.de/) 
 [![Apache License 2](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -30,12 +30,37 @@ Now you can
 
 all without writing more code, because you already have all information you need in the context of your log messages.
 
+## How?
+
+If there are log messages that happen in the context of an order, you may want to attach information about that order to
+these log messages.
+
+```java
+    mdc(incomingOrder, () -> {
+        log.info("A new order has come in.");
+        
+        if(isValid(incomingOrder)){
+            prepareForDelivery(incomingOrder);
+        }
+    });
+```
+
+The `incomingOrder` will be attached to the log messages generated in this `try` block, including
+
+* the message from `log.info("A new order has come in.")` .
+* all messages logged by `prepareForDelivery(...)`, `isValid(...)`
+* all messages logged by methods called indirectly by the methods above
+
+Here's what a log message with an `incomingOrder` looks like in Kibana:
+
+![Kibana-Example](docs/structured-logging-kibana.png)
+
 ---
 
 **Table of Contents**
 
 * [Why?](#why)
-* [Example](#example)
+* [How?](#how)
 * [Advantages](#advantages)
   * [Advantages over plain logging](#advantages-over-plain-logging)
   * [Advantages over using MDC directly](#advantages-over-using-mdc-directly)
@@ -48,9 +73,11 @@ all without writing more code, because you already have all information you need
   * [Step 5: (also Optional) Test your logging](#step-5-also-optional-test-your-logging)
 * [Advanced usage](#advanced-usage)
   * [Define how Objects should be named in MDC](#define-how-objects-should-be-named-in-mdc)
+  * [Use try-with-resources instead of a callback](#use-try-with-resources-instead-of-a-callback)
   * [Changing serialization by using Jackson annotations](#changing-serialization-by-using-jackson-annotations)
   * [Changing serialization by using a custom ObjectMapper](#changing-serialization-by-using-a-custom-objectmapper)
 * [Changes](#changes)
+  * [3.0.0](#300)
   * [2.0.6](#206)
   * [2.0.5](#205)
   * [2.0.4](#204)
@@ -62,31 +89,6 @@ all without writing more code, because you already have all information you need
 * [FAQ and Caveats](#faq-and-caveats)
 
 ---
-
-## Example
-
-If there are log messages that happen in the context of an order, you may want to attach information about that order to
-these log messages.
-
-```java
-    try(var c = MdcContext.of(incomingOrder)){
-        log.info("A new order has come in.");
-        
-        if(isValid(incomingOrder)){
-            prepareForDelivery(incomingOrder);
-        }
-    }
-```
-
-The `incomingOrder` will be attached to the log messages generated in this `try` block, including
-
-* the message from `log.info("A new order has come in.")` .
-* all messages logged by `prepareForDelivery(...)`, `isValid(...)`
-* all messages logged by methods called indirectly by the methods above
-
-Here's what a log message with an `incomingOrder` looks like in Kibana:
-
-![Kibana-Example](docs/structured-logging-kibana.png)
 
 ## Advantages
 
@@ -143,7 +145,7 @@ If you use maven, add this to your pom.xml:
 <dependency>
     <groupId>de.dm.infrastructure</groupId>
     <artifactId>structured-logging</artifactId>
-    <version>2.0.5</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 
@@ -178,26 +180,37 @@ The following configuration can be used as an example:
 
 ### Step 3: Put Objects into the logging context
 
-Create a new `MdcContext` in a try-with-resources statement to define the scope in which context information should
-be set:
+use MdcContext.mdc(...) to define the scope in which context information should be set:
 
 ```java
+import static de.dm.prom.structuredlogging.MdcContext.mdc;
+
+...
+
 log.info("a message without context");
 
 TimeMachine timeMachine=TimeMachineBuilder.build();
 
-//set the MdcContext as soon as possible after object (timeMachine) creation
-try(var c = MdcContext.of(timeMachine)){
+mdc(timeMachine, () -> {
     log.info("time machine found. Trying to use it");
-
-    travelSomewhereWith(timeMachine);
 
     timeMachine.setFluxFactor(42);
 
     MdcContext.update(timeMachine);
 
-    travelSomewhereWith(timeMachine);
-}
+    travelSomewhenWith(timeMachine);
+});
+
+log.info("another message without context");
+```
+
+You can also return values:
+
+```java
+var currentTime = mdc(timeMachine, () -> {
+    timeMachine.setFluxFactor(42);
+    return travelSomewhenWith(timeMachine);
+});
 
 log.info("another message without context");
 ```
@@ -264,11 +277,11 @@ There are three ways to define the MDC key for the objects you put into the cont
 **2. Define it manually**
 
 ```java
-try(var c = MdcContext.of("de_lorean", timeMachine)){
+mdc("de_lorean", timeMachine, () -> {
     ...
     MdcContext.update("de_lorean", timeMachine);
     ...
-}
+});
 ```
 
 **3. Provide an MdcKeySupplier**
@@ -292,11 +305,30 @@ Then use it:
 
 ```java
 //MdcContext.of(...) is defined so that you can only use TimeMachineKey with a TimeMachine.
-try(var c = MdcContext.of(TimeMachineKey.class, timeMachine)){
+mdc(TimeMachineKey.class, timeMachine, () -> {
     ...
     MdcContext.update(TimeMachineKey.class, timeMachine);
     ...
-}
+});
+```
+
+### Use try-with-resources instead of a callback
+
+You can also use try-with-resources to manage your MDC context if you prefer that or need to. For example, the following code
+
+1. would not be possible with the callback API because `availableSeats` is not effectively final
+1. would be inconvenient, because there are multiple values in the MDC context, which would require nested callbacks
+1. may not be possible with the callback API if `seat.isAvaliable()` can throw **multiple** checked Exceptions. The callback API works with one checked Exception, though.
+
+```java
+int availableSeats = 0;
+seats.forEach(seat -> {
+    try (var s = MdcContext.of(seat); var c = MdcContext.of(cinema)) {
+        if (seat.isAvailable()) { // isAvailable() also logs
+            availableSeats++;
+        }
+    }
+});
 ```
 
 ### Changing serialization by using Jackson annotations
@@ -318,6 +350,12 @@ public class TimeMachine {
 If you want to use your own ObjectMapper for serialization, you can exchange the used default ObjectMapper by calling `setGlobalObjectMapper`. To reset to the default ObjectMapper, you can use `resetGlobalObjectMapper` at any time.
 
 ## Changes
+
+### 3.0.0
+
+* **Breaking Change**: Structured Logging now requires Java 17
+* **New Feature**: Convenience methods as an alternative to try-with-resources
+* updated dependencies
 
 ### 2.0.6
 
