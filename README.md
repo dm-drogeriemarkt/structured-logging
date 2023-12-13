@@ -45,7 +45,7 @@ these log messages.
     });
 ```
 
-The `incomingOrder` will be attached to the log messages generated in this `try` block, including
+The `incomingOrder` will be attached to the log messages generated in the supplied lambda, including
 
 * the message from `log.info("A new order has come in.")` .
 * all messages logged by `prepareForDelivery(...)`, `isValid(...)`
