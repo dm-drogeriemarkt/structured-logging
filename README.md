@@ -1,6 +1,6 @@
 # Structured Logging
 
-[<img src="https://opensourcelogos.aws.dmtech.cloud/dmTECH_opensource_logo.svg" height="20" width="130">](https://dmtech.de/) 
+[<img src="https://raw.githubusercontent.com/dm-drogeriemarkt/.github/refs/heads/main/assets/dmtech-open-source-badge.svg" height="20" width="130">](https://dmtech.de/) 
 [![Apache License 2](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Build Status](https://github.com/dm-drogeriemarkt/structured-logging/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/dm-drogeriemarkt/structured-logging/actions?query=branch%3Amaster)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.dm.infrastructure/structured-logging/badge.svg)](https://maven-badges.herokuapp.com/maven-central/de.dm.infrastructure/structured-logging)
