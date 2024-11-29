@@ -25,23 +25,28 @@ import static org.mockito.Mockito.when;
 
 @Slf4j
 class MdcContextUnitTest {
-    private static final String SAMPLE_BEAN_JSON = "{\"name\":\"John Doe\"," +
-            "\"age\":35," +
-            "\"importantTime\":\"2019-01-01T13:37\"," +
-            "\"importantOffsetTime\":\"2019-01-01T13:37+01:00\"," +
-            "\"instant\":\"1970-01-01T00:00:01Z\"," +
-            "\"localDate\":\"2020-01-01\"," +
-            "\"offsetTime\":\"13:37+01:00\"," +
-            "\"period\":\"P42D\"," +
-            "\"zonedDateTime\":\"2019-01-01T13:37Z[UTC]\"," +
-            "\"localTime\":\"13:37\"," +
-            "\"duration\":\"PT42M\"," +
-            "\"dayOfWeek\":\"MONDAY\"," +
-            "\"month\":\"JANUARY\"," +
-            "\"monthDay\":\"--12-24\"," +
-            "\"year\":\"1984\"," +
-            "\"yearMonth\":\"2000-08\"" +
-            "}";
+    private static final String SAMPLE_BEAN_JSON = """
+            {
+                "name":"John Doe",
+                "age":35,
+                "importantTime":"2019-01-01T13:37",
+                "importantOffsetTime":"2019-01-01T13:37+01:00",
+                "instant":"1970-01-01T00:00:01Z",
+                "localDate":"2020-01-01",
+                "offsetTime":"13:37+01:00",
+                "period":"P42D",
+                "zonedDateTime":"2019-01-01T13:37Z[UTC]",
+                "localTime":"13:37",
+                "duration":"PT42M",
+                "dayOfWeek":"MONDAY",
+                "month":"JANUARY",
+                "monthDay":"--12-24",
+                "year":"1984",
+                "yearMonth":"2000-08",
+                "emptyOptional" : null,
+                "nonEmptyOptional" : "Hello"
+            }
+            """;
 
     @RegisterExtension
     public LogCapture logCapture = LogCapture.forCurrentPackage();
@@ -262,9 +267,8 @@ class MdcContextUnitTest {
         String actualJson = jsonStringFromMdc.replaceFirst(JSON_PREFIX, "");
         JsonNode treeFromMDC = objectMapper.readTree(actualJson);
 
-        assertThat(treeFromMDC).as("Expecting:\n<%s>\nto be equal to:\n<%s>\nbut was not.\n\n\n",
-                        treeFromMDC.toPrettyString(), sampleBeanTree.toPrettyString())
-                .isEqualTo(sampleBeanTree);
+        assertThat(treeFromMDC.toPrettyString())
+                .isEqualTo(sampleBeanTree.toPrettyString());
     }
 
     @Test

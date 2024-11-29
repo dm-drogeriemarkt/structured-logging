@@ -3,6 +3,7 @@ package de.dm.prom.structuredlogging;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 
@@ -37,20 +38,21 @@ public final class MdcContext implements java.io.Closeable {
 
     static {
         SimpleModule module = new SimpleModule();
-        module.addSerializer(Instant.class, new ToStringSerializer());
-        module.addSerializer(LocalDate.class, new ToStringSerializer());
-        module.addSerializer(LocalDateTime.class, new ToStringSerializer());
-        module.addSerializer(OffsetDateTime.class, new ToStringSerializer());
-        module.addSerializer(OffsetTime.class, new ToStringSerializer());
-        module.addSerializer(Period.class, new ToStringSerializer());
-        module.addSerializer(ZonedDateTime.class, new ToStringSerializer());
-        module.addSerializer(LocalTime.class, new ToStringSerializer());
-        module.addSerializer(Duration.class, new ToStringSerializer());
-        module.addSerializer(MonthDay.class, new ToStringSerializer());
-        module.addSerializer(Year.class, new ToStringSerializer());
-        module.addSerializer(YearMonth.class, new ToStringSerializer());
+        module.addSerializer(Instant.class, ToStringSerializer.instance);
+        module.addSerializer(LocalDate.class, ToStringSerializer.instance);
+        module.addSerializer(LocalDateTime.class, ToStringSerializer.instance);
+        module.addSerializer(OffsetDateTime.class, ToStringSerializer.instance);
+        module.addSerializer(OffsetTime.class, ToStringSerializer.instance);
+        module.addSerializer(Period.class, ToStringSerializer.instance);
+        module.addSerializer(ZonedDateTime.class, ToStringSerializer.instance);
+        module.addSerializer(LocalTime.class, ToStringSerializer.instance);
+        module.addSerializer(Duration.class, ToStringSerializer.instance);
+        module.addSerializer(MonthDay.class, ToStringSerializer.instance);
+        module.addSerializer(Year.class, ToStringSerializer.instance);
+        module.addSerializer(YearMonth.class, ToStringSerializer.instance);
 
         DEFAULT_OBJECT_MAPPER.registerModule(module);
+        DEFAULT_OBJECT_MAPPER.registerModule(new Jdk8Module());
     }
 
     /**

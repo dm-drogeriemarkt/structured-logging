@@ -19,6 +19,7 @@ import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import static java.time.DayOfWeek.MONDAY;
 import static java.time.Month.JANUARY;
@@ -42,6 +43,8 @@ class ExampleBean {
     private MonthDay monthDay;
     private Year year;
     private YearMonth yearMonth;
+    private Optional<String> emptyOptional;
+    private Optional<String> nonEmptyOptional;
 
     static ExampleBean getExample() {
         LocalDateTime importantTime = LocalDateTime.of(2019, JANUARY, 1, 13, 37);
@@ -63,6 +66,8 @@ class ExampleBean {
                 .monthDay(MonthDay.of(12, 24))
                 .year(Year.of(1984))
                 .yearMonth(YearMonth.of(2000, 8))
+                .emptyOptional(Optional.empty())
+                .nonEmptyOptional(Optional.of("Hello"))
                 .build();
     }
 }
