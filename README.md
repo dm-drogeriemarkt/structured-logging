@@ -355,6 +355,7 @@ If you want to use your own ObjectMapper for serialization, you can exchange the
 ### 3.0.1
 
 * properly serialize Optional and other Java 8 Types provided by jackson-datatype-jdk8
+* updated dependencies
 
 ### 3.0.0
 
