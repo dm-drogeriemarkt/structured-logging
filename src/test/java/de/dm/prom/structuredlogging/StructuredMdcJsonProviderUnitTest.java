@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +21,9 @@ import org.springframework.util.ResourceUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(OutputCaptureExtension.class)
 // LogCapture is not applicable here because the actual output format of the log is relevant
@@ -83,16 +85,19 @@ class StructuredMdcJsonProviderUnitTest {
             MDC.put("an_unmanaged_mdc_field", "some value");
             log.info("something in which the ExampleBean context is relevant");
 
-            String consoleOutput = output.toString();  //works right now because the output contains exactly one log message
+            var consoleOutputLines = output.toString().split(System.lineSeparator());
+            var jsonLogLines = Arrays.stream(consoleOutputLines).filter(line -> line.startsWith("{")).toList();
+
+            assertThat(jsonLogLines).withFailMessage("no JSON log lines found").isNotEmpty();
 
             ObjectMapper mapper = new ObjectMapper();
 
             JsonNode expectedJson = mapper.readTree(SAMPLE_LOGSTASH_JSON_LOG);
-            JsonNode actualJson = mapper.readTree(consoleOutput);
+            JsonNode actualJson = mapper.readTree(jsonLogLines.get(0));
 
             ((ObjectNode) actualJson).remove("@timestamp"); //because only ObjectNode provides .remove(...)
 
-            Assertions.assertThat(actualJson.toPrettyString()).isEqualTo(expectedJson.toPrettyString());
+            assertThat(actualJson.toPrettyString()).isEqualTo(expectedJson.toPrettyString());
         }
     }
 }
