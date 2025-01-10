@@ -77,6 +77,7 @@ Here's what a log message with an `incomingOrder` looks like in Kibana:
   * [Changing serialization by using Jackson annotations](#changing-serialization-by-using-jackson-annotations)
   * [Changing serialization by using a custom ObjectMapper](#changing-serialization-by-using-a-custom-objectmapper)
 * [Changes](#changes)
+  * [3.0.2](#302)
   * [3.0.1](#301)
   * [3.0.0](#300)
   * [2.0.6](#206)
@@ -146,7 +147,7 @@ If you use maven, add this to your pom.xml:
 <dependency>
     <groupId>de.dm.infrastructure</groupId>
     <artifactId>structured-logging</artifactId>
-    <version>3.0.1</version>
+    <version>3.0.2</version>
 </dependency>
 ```
 
@@ -352,6 +353,10 @@ If you want to use your own ObjectMapper for serialization, you can exchange the
 
 ## Changes
 
+### 3.0.2
+
+* dependencies updated due to logback vulnerability
+  
 ### 3.0.1
 
 * properly serialize Optional and other Java 8 Types provided by jackson-datatype-jdk8
