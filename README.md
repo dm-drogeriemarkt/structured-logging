@@ -77,6 +77,7 @@ Here's what a log message with an `incomingOrder` looks like in Kibana:
   * [Changing serialization by using Jackson annotations](#changing-serialization-by-using-jackson-annotations)
   * [Changing serialization by using a custom ObjectMapper](#changing-serialization-by-using-a-custom-objectmapper)
 * [Changes](#changes)
+  * [4.0.0-RC1](#400-rc1)
   * [3.0.2](#302)
   * [3.0.1](#301)
   * [3.0.0](#300)
@@ -352,6 +353,10 @@ public class TimeMachine {
 If you want to use your own ObjectMapper for serialization, you can exchange the used default ObjectMapper by calling `setGlobalObjectMapper`. To reset to the default ObjectMapper, you can use `resetGlobalObjectMapper` at any time.
 
 ## Changes
+
+### 4.0.0-RC1
+
+* updated for compatibility with Logstash 9, Spring 7, Spring Boot 4 and Jackson 3, which constitutes a breaking change
 
 ### 3.0.2
 
