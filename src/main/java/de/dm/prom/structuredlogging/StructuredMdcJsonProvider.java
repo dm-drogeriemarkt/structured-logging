@@ -1,11 +1,10 @@
 package de.dm.prom.structuredlogging;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import com.fasterxml.jackson.core.JsonGenerator;
 import net.logstash.logback.composite.JsonWritingUtils;
 import net.logstash.logback.composite.loggingevent.MdcJsonProvider;
+import tools.jackson.core.JsonGenerator;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,11 +34,11 @@ public class StructuredMdcJsonProvider extends MdcJsonProvider {
     }
 
     @Override
-    public void writeTo(JsonGenerator generator, ILoggingEvent event) throws IOException {
+    public void writeTo(JsonGenerator generator, ILoggingEvent event) {
         Map<String, String> mdcProperties = event.getMDCPropertyMap();
         if (mdcProperties != null && !mdcProperties.isEmpty()) {
             if (getFieldName() != null) {
-                generator.writeObjectFieldStart(getFieldName());
+                generator.writeObjectPropertyStart(getFieldName());
             }
             if (!getIncludeMdcKeyNames().isEmpty()) {
                 mdcProperties = new HashMap<>(mdcProperties);
@@ -59,7 +58,7 @@ public class StructuredMdcJsonProvider extends MdcJsonProvider {
         }
     }
 
-    private void writeNormalFields(JsonGenerator generator, Map<String, String> mdcProperties) throws IOException {
+    private void writeNormalFields(JsonGenerator generator, Map<String, String> mdcProperties) {
         Map<String, String> normalFields = mdcProperties.entrySet().stream()
                 .filter(entry -> !isFieldWithJsonObject(entry))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -67,13 +66,13 @@ public class StructuredMdcJsonProvider extends MdcJsonProvider {
         JsonWritingUtils.writeMapEntries(generator, normalFields);
     }
 
-    private void writeJsonFields(JsonGenerator generator, Map<String, String> mdcProperties) throws IOException {
+    private void writeJsonFields(JsonGenerator generator, Map<String, String> mdcProperties) {
         Map<String, String> jsonFields = mdcProperties.entrySet().stream()
                 .filter(StructuredMdcJsonProvider::isFieldWithJsonObject)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         for (Map.Entry<String, String> field : jsonFields.entrySet()) {
-            generator.writeFieldName(field.getKey());
+            generator.writeName(field.getKey());
             generator.writeRawValue(field.getValue().replaceFirst(JSON_PREFIX, ""));
         }
     }
