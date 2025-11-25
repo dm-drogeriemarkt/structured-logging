@@ -16,7 +16,7 @@ if [[ "${REF_TYPE}" == "tag" ]]; then
     #
     # There may be an easier way to sign and deploy all the artifacts (sources, javadoc, binaries and pom), but after
     # four hours of debugging this, I'm satisfied that it works at all.
-    mvn --batch-mode -X -DskipTests=true -Dproject.version=${REF_NAME} -P sign clean source:jar javadoc:jar deploy
+    mvn --batch-mode -DskipTests=true -Dproject.version=${REF_NAME} -P sign clean source:jar javadoc:jar deploy
     SUCCESS=$?
 else
     echo "this should only be run for tags"
