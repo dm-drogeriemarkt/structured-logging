@@ -7,7 +7,7 @@
         <server>
             <id>central</id>
             <username>${env.CENTRAL_USERNAME}</username>
-            <password>${env.CENTRAL_TOKEN}</password>
+            <password>${env.CENTRAL_KEY}</password>
         </server>
     </servers>
 
