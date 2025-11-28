@@ -48,6 +48,11 @@ jobs:
 
       - name: Run with mvn context
         env:
+          GPG_KEYNAME: ${{ secrets.GPG_KEYNAME }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          GPG_KEY_BASE64: ${{ secrets.GPG_KEY_BASE64 }}
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_KEY: ${{ secrets.CENTRAL_KEY}}
           COMMAND: ${{ inputs.COMMAND }}
           REF_TYPE: ${{ github.ref_type }}
           REF_NAME: ${{ github.ref_name }}
