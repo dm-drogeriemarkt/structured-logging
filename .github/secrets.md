@@ -18,11 +18,10 @@ gpg --export-secret-keys ${GPG_KEYNAME} | base64
 
 Passphrase of the GPG key
 
-## OSSRH_JIRA_USERNAME
+## CENTRAL_USERNAME
 
-User name used for authenticating at the Sonatype OSS repo. Same as the Password used to log in
-at https://issues.sonatype.org
+Username for deployment, see https://central.sonatype.org/publish/publish-portal-maven/#publishing
 
-## OSSRH_JIRA_PASSWORD
+## CENTRAL_KEY
 
-Password used for authenticating at the Sonatype OSS repo.
+Key for deployment, see above.
